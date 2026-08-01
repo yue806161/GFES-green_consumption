@@ -1,98 +1,49 @@
-# vinext-starter
+# GFES 綠色消費循環平台
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+GFES 是一套提案展示用的綠點循環 Demo，串聯消費者、合作小農，以及銀行／政府／企業。消費者可從綠色消費、購買節能家電、低碳交通、電子帳單或政府企業激勵計畫取得綠點，系統會依所在地優先推薦附近小農，再用綠點支持改善行動或兌換可追溯農產。
 
-## Prerequisites
+本版本只聚焦「綠色消費平台」，不包含綠色信用評分、授信補充指標或融資服務。
 
-- Node.js `>=22.13.0`
+## 三種體驗角色
 
-## Quick Start
+- 消費者：從消費、節能家電、交通、電子帳單與激勵任務取得綠點，優先支持或兌換附近小農。
+- 合作小農：上架商品，綁定農產履歷、無農藥檢測與友善耕作證明；收到的綠點可向合作農會兌換農具、檢測、轉型輔導與補助資源。
+- 銀行／政府／企業：建立綠點激勵計畫，追蹤參與人次、點數流向、小農受益與環境成果，累積可供 ESG 揭露的績效證據。
+
+## 核心循環
+
+1. 消費者完成綠色消費、購買節能家電、搭乘低碳交通、改用電子帳單，或參與政府企業任務。
+2. 商家、政府或企業依激勵規則發放綠點。
+3. 平台依消費者所在地，優先推薦附近小農、改善專案與可追溯農產。
+4. 消費者使用綠點支持小農或兌換商品，平台保留點數流向與影響力收據。
+5. 小農使用收到的綠點，透過合作農會兌換農作器具、檢測、輔導或補助。
+6. 銀行、政府與企業彙整綠色行動、地方支持與永續經濟成果；正式 ESG 評分仍依採用準則與評鑑機構認定。
+
+## 專案狀態
+
+目前為競賽／提案用的本地互動 Demo。人物、故事、綠點、訂單、距離與成果數字皆為模擬資料；尚未串接真實定位、點數、農會、支付、物流或資料庫服務。
+
+## 技術架構
+
+- React 19、Next.js 16、TypeScript
+- Vinext、Vite、Cloudflare Worker
+- Recharts、Lucide React
+- 可選用 Cloudflare D1 與 Drizzle；目前資料庫 schema 為空
+
+## 本地啟動
+
+需求：Node.js 22.13.0 以上。
 
 ```bash
 npm install
 npm run dev
+```
+
+本地網址預設為 `http://localhost:4310`。
+
+## 驗證
+
+```bash
 npm run build
+npm test
 ```
-
-This starter does not use `wrangler.jsonc`.
-
-## Included Shape
-
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)

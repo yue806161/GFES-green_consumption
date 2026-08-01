@@ -32,10 +32,12 @@ test("server-renders the green consumption platform", async () => {
 
   const html = await response.text();
   assert.match(html, /<title>綠色消費平台<\/title>/i);
-  assert.match(html, /讓每一次消費/);
-  assert.match(html, /都成為土地向前的力量/);
+  assert.match(html, /讓每一次綠色行動/);
+  assert.match(html, /都成為在地小農的力量/);
   assert.match(html, /看見每一份綠色選擇背後的行動/);
   assert.match(html, /登入／體驗 Demo/);
+  assert.match(html, /綠色消費循環/);
+  assert.doesNotMatch(html, /綠色信用|信用評分|融資|授信/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|Building your site/i);
 });
 
@@ -50,15 +52,46 @@ test("keeps the completed demo and consumer journeys wired", async () => {
 
   assert.match(page, /<GreenPlatformDemo \/>/);
   assert.match(layout, /default:\s*"綠色消費平台"/);
-  assert.match(layout, /讓每一次消費，都成為土地向前的力量/);
+  assert.match(layout, /把消費、低碳交通與電子帳單化為綠點/);
   assert.match(demo, /function ConsumerOrdersPage/);
   assert.match(demo, /兌換訂單/);
   assert.match(demo, /receiptItems/);
   assert.match(demo, /了解更多完整故事/);
+  assert.match(demo, /銀行／政府／企業/);
+  assert.match(demo, /附近小農/);
+  assert.match(demo, /台北市大安區/);
+  assert.match(demo, /距離你約/);
+  assert.match(demo, /商品管理/);
+  assert.match(demo, /function saveFarmerProduct/);
+  assert.match(demo, /function ProgramModal/);
+  assert.match(demo, /function ImprovementProjectModal/);
+  assert.match(demo, /function RoleCycleExplorer/);
+  assert.match(demo, /查看三方綠點循環/);
+  assert.match(demo, /onMouseEnter=\{\(\) => setHoveredRole/);
+  assert.match(demo, /function saveFarmerProject/);
+  assert.match(demo, /FarmerProjectsPage/);
+  assert.match(demo, /projects=\{availableLocalProjects\}/);
+  assert.match(demo, /確認公開募資/);
+  assert.match(demo, /function saveIncentivePlan/);
+  assert.match(demo, /GFES_green_consumption_impact_summary_2026H1\.pdf/);
+  assert.match(demo, /下載正式版 PDF/);
+  assert.match(demo, /setIncentivePlans/);
+  assert.match(demo, /programs\.length/);
+  assert.match(demo, /儲存商品變更/);
+  assert.match(demo, /確認上架新品/);
+  assert.match(demo, /農業資源兌換/);
+  assert.match(demo, /綠點激勵計畫/);
+  assert.match(demo, /節能家電汰舊換新/);
+  assert.match(demo, /每件 600 點/);
+  assert.match(demo, /成果透明度/);
+  assert.doesNotMatch(demo, /綠色信用|信用評分|融資|授信|金融合作機構/);
   assert.match(css, /\.order-layout/);
+  assert.match(css, /\.role-cycle-node\.dimmed/);
+  assert.match(css, /\.cycle-section-heading h2 \{ white-space: nowrap/);
   assert.match(css, /\.receipt-more-button/);
   assert.match(packageJson, /vinext dev --port 4310 --strictPort/);
 
+  await access(new URL("../public/reports/GFES_green_consumption_impact_summary_2026H1.pdf", import.meta.url));
   await assert.rejects(access(new URL("../app/_sites-preview", import.meta.url)));
   await assert.rejects(access(new URL("public/_sites-preview", templateRoot)));
 });

@@ -20,7 +20,7 @@ import {
   ArrowLeft,
   ArrowRight,
   BadgeCheck,
-  Banknote,
+
   Building2,
   Check,
   CheckCircle2,
@@ -64,25 +64,98 @@ type Modal =
   | "portfolio"
   | "story"
   | "farmer-detail"
-  | "local-story";
+  | "local-story"
+  | "product"
+  | "program"
+  | "farmer-project";
+
+type IncentiveProgram = {
+  id: string;
+  name: string;
+  sponsor: string;
+  action: string;
+  reward: string;
+  budgetPoints: number;
+  participants: string;
+  progress: number;
+  esg: string;
+};
+type FarmerProduct = {
+  id: string;
+  title: string;
+  points: number;
+  stock: number;
+  unit: string;
+  proof: string;
+  delivery: string;
+  description: string;
+  image: string;
+};
+
+type ProjectAllocation = { label: string; percent: number };
+type ProjectStory = { location: string; headline: string; quote: string; paragraphs: string[] };
+type LocalProject = {
+  id: string;
+  kind: "support" | "redeem";
+  image: string;
+  title: string;
+  farmer: string;
+  note: string;
+  purpose: string;
+  points: number;
+  progress: number;
+  impact: string;
+  targetPoints?: number;
+  raisedPoints?: number;
+  supporters?: number;
+  city?: string;
+  district?: string;
+  distance?: number;
+  completionDate?: string;
+  proof?: string;
+  allocations?: ProjectAllocation[];
+  story?: ProjectStory;
+};
+
+type ImprovementProjectDraft = {
+  title: string;
+  note: string;
+  purpose: string;
+  points: number;
+  targetPoints: number;
+  impact: string;
+  city: string;
+  district: string;
+  distance: number;
+  completionDate: string;
+  proof: string;
+  allocations: ProjectAllocation[];
+  story: ProjectStory;
+};
+
+const initialFarmerProducts: FarmerProduct[] = [
+  { id: "leafy-box", title: "友善葉菜箱", points: 480, stock: 24, unit: "箱", proof: "產銷履歷 TAP-26-0718", delivery: "雲林縣與鄰近 40 公里", description: "六種當季友善葉菜，以循環箱低溫配送。", image: "https://images.pexels.com/photos/8232776/pexels-photo-8232776.jpeg?auto=compress&cs=tinysrgb&w=500" },
+  { id: "rice-pack", title: "節水栽培米 2 公斤", points: 360, stock: 38, unit: "包", proof: "無農藥檢測合格", delivery: "全台常溫配送", description: "友善稻作與節水栽培紀錄完整，採減塑包裝。", image: "https://images.pexels.com/photos/4110251/pexels-photo-4110251.jpeg?auto=compress&cs=tinysrgb&w=500" },
+  { id: "herb-tea", title: "減塑香草茶", points: 260, stock: 17, unit: "組", proof: "友善耕作紀錄", delivery: "全台常溫配送", description: "自然乾燥香草茶包，附採收批次與沖泡說明。", image: "https://images.pexels.com/photos/1417945/pexels-photo-1417945.jpeg?auto=compress&cs=tinysrgb&w=500" },
+];
 
 const roles = {
   consumer: {
     label: "消費者",
     account: "林子晴",
-    description: "回傳消費證明、累積綠點並支持小農",
+    description: "從消費、交通與電子帳單取得綠點，優先支持附近小農",
     icon: User,
   },
   farmer: {
-    label: "小農",
+    label: "合作小農",
     account: "禾日友善農園",
-    description: "管理永續資料、綠色信用與資源媒合",
+    description: "用農產履歷與友善耕作證明獲得支持，再用綠點兌換農業資源",
     icon: Sprout,
   },
   institution: {
-    label: "金融合作機構",
-    account: "綠色金融合作中心",
-    description: "掌握農戶信用、資金流向與影響成果",
+    label: "銀行／政府／企業",
+    account: "永續共好計畫辦公室",
+    description: "設計綠點激勵計畫，累積可揭露的 ESG 與地方效益",
     icon: Building2,
   },
 } satisfies Record<Role, { label: string; account: string; description: string; icon: typeof User }>;
@@ -96,13 +169,13 @@ const pointTrend = [
   { month: "7月", points: 510 },
 ];
 
-const fundTrend = [
+const supportTrend = [
   { month: "2月", funds: 168 },
   { month: "3月", funds: 205 },
   { month: "4月", funds: 244 },
   { month: "5月", funds: 278 },
   { month: "6月", funds: 326 },
-  { month: "7月", funds: 386 },
+  { month: "7月", funds: 478 },
 ];
 
 const baseDimensions = [
@@ -114,92 +187,90 @@ const baseDimensions = [
 ];
 
 const farmers = [
-  { name: "禾日友善農園", area: "雲林", crop: "葉菜", score: 86, status: "審核中", amount: "68 萬", purpose: "節水灌溉設備", completeness: 100 },
-  { name: "青谷稻作", area: "嘉義", crop: "稻米", score: 91, status: "已媒合", amount: "120 萬", purpose: "低碳烘穀設備", completeness: 96 },
-  { name: "山里果園", area: "花蓮", crop: "果樹", score: 79, status: "待補件", amount: "36 萬", purpose: "太陽能冷藏", completeness: 72 },
-  { name: "暖田蔬果", area: "彰化", crop: "蔬果", score: 84, status: "已媒合", amount: "52 萬", purpose: "循環包材與冷鏈", completeness: 92 },
+  { name: "禾日友善農園", area: "雲林", crop: "葉菜", score: 86, status: "執行中", amount: "12,680 點", purpose: "節水灌溉改善", completeness: 100 },
+  { name: "青谷稻作", area: "嘉義", crop: "稻米", score: 91, status: "成果回報", amount: "9,420 點", purpose: "田埂棲地復育", completeness: 96 },
+  { name: "山里果園", area: "花蓮", crop: "果樹", score: 79, status: "待補資料", amount: "7,860 點", purpose: "太陽能冷藏", completeness: 72 },
+  { name: "暖田蔬果", area: "彰化", crop: "蔬果", score: 84, status: "已完成", amount: "8,240 點", purpose: "循環包材與冷鏈", completeness: 92 },
 ];
-
-const fundingOffers = [
+const farmerBenefits = [
   {
-    id: "starter",
-    category: "資金支持",
-    name: "綠色起步配對金",
-    amount: "最高 10 萬",
-    term: "6–12 個月",
-    rate: "成果核銷・免還款",
-    description: "協助剛開始累積永續資料的小農，添購紀錄工具、友善資材與小型節水設施。",
-    purpose: "友善資材、紀錄工具、小型節水設施",
-    suggestedAmount: "80000",
-    suggestedLabel: "8 萬元",
-    paymentLabel: "依成果分期核銷",
-    planText: "預計添購土壤濕度計、田間紀錄工具及友善防治資材，建立可追溯的生產基礎。",
-    requiredScore: 70,
+    id: "soil-test",
+    category: "農會服務",
+    name: "土壤健康檢測補助",
+    amount: "450 綠點",
+    term: "7 個工作天",
+    rate: "合作農會採樣",
+    description: "由合作農會安排土壤採樣，提供酸鹼值、有機質與肥力建議，協助精準施肥。",
+    purpose: "土壤檢測與施肥建議",
+    suggestedAmount: "1",
+    suggestedLabel: "1 次檢測",
+    paymentLabel: "扣除 450 綠點",
+    planText: "申請本季土壤檢測，作為下一期施肥與友善耕作紀錄依據。",
+    requiredScore: 450,
   },
   {
-    id: "local",
-    category: "優惠融資",
-    name: "地方創生週轉支持",
-    amount: "最高 30 萬",
-    term: "最長 2 年",
-    rate: "Demo 年利率 1.68% 起",
-    description: "支應種苗、友善資材、循環包裝及採收旺季週轉，協助穩定接單與在地供應。",
-    purpose: "友善資材、循環包材、季節性營運週轉",
-    suggestedAmount: "240000",
-    suggestedLabel: "24 萬元",
-    paymentLabel: "約 10,300 元／月",
-    planText: "預計補充友善資材與循環包裝，並支應採收旺季的短期人力與冷鏈週轉。",
-    requiredScore: 75,
+    id: "harvest-crates",
+    category: "農具兌換",
+    name: "循環收成籃 10 入組",
+    amount: "600 綠點",
+    term: "農會取貨",
+    rate: "剩餘 24 組",
+    description: "耐用、可堆疊的循環收成籃，降低一次性紙箱與塑膠袋使用。",
+    purpose: "採收、分級與循環運送",
+    suggestedAmount: "1",
+    suggestedLabel: "1 組",
+    paymentLabel: "扣除 600 綠點",
+    planText: "預計用於葉菜採收與合作通路配送，並記錄循環使用次數。",
+    requiredScore: 600,
   },
   {
-    id: "equipment",
-    category: "優惠融資",
-    name: "綠色設備改善方案",
-    amount: "最高 80 萬",
-    term: "最長 5 年",
-    rate: "Demo 年利率 1.38% 起",
-    description: "投入節水灌溉、節能冷藏、低碳農機與能源管理設備，改善效率並降低長期成本。",
-    purpose: "節水、節能、低碳農機與冷鏈設備",
-    suggestedAmount: "680000",
-    suggestedLabel: "68 萬元",
-    paymentLabel: "約 11,900 元／月",
-    planText: "預計汰換老舊灌溉管線，導入分區滴灌與智慧控制器，降低用水並穩定產量。",
-    requiredScore: 80,
+    id: "irrigation-kit",
+    category: "農具兌換",
+    name: "節水滴灌器材券",
+    amount: "1,200 綠點",
+    term: "30 日內使用",
+    rate: "合作農會器材部",
+    description: "兌換滴灌管、接頭與簡易控制器，改善小面積田區的用水效率。",
+    purpose: "節水灌溉器材",
+    suggestedAmount: "1",
+    suggestedLabel: "1 張器材券",
+    paymentLabel: "扣除 1,200 綠點",
+    planText: "用於更新老舊滴灌管線，完成後回報安裝照片與每月用水紀錄。",
+    requiredScore: 1200,
     recommended: true,
   },
   {
-    id: "resilience",
-    category: "資金支持",
-    name: "低碳韌性改善獎勵",
-    amount: "最高 50 萬",
-    term: "成果期 18 個月",
-    rate: "最高配對支持 40%",
-    description: "支持防災設施、雨水回收、土壤改善及氣候調適，依里程碑核銷配對資金。",
-    purpose: "防災、雨水回收、土壤與氣候調適",
-    suggestedAmount: "400000",
-    suggestedLabel: "40 萬元",
-    paymentLabel: "預估配對支持 16 萬",
-    planText: "預計建置雨水回收槽、田區排水與土壤保水措施，降低極端氣候造成的生產風險。",
-    requiredScore: 88,
+    id: "organic-coaching",
+    category: "轉型補助",
+    name: "友善／有機轉型輔導",
+    amount: "1,800 綠點",
+    term: "輔導 6 個月",
+    rate: "政府與農會共同支持",
+    description: "包含田間訪視、無農藥檢測、紀錄表與驗證準備，協助建立可信生產資料。",
+    purpose: "友善耕作與無農藥驗證",
+    suggestedAmount: "1",
+    suggestedLabel: "1 期輔導",
+    paymentLabel: "扣除 1,800 綠點",
+    planText: "申請友善耕作轉型輔導，補齊用藥、資材與田間管理紀錄。",
+    requiredScore: 1800,
   },
   {
-    id: "upgrade",
-    category: "優惠融資",
-    name: "永續轉型升級方案",
-    amount: "最高 150 萬",
-    term: "最長 7 年",
-    rate: "Demo 專案評估利率",
-    description: "支持智慧農業、再生能源、加工與產銷設備升級，擴大長期永續生產與地方就業。",
-    purpose: "智慧農業、再生能源、加工與產銷升級",
-    suggestedAmount: "1200000",
-    suggestedLabel: "120 萬元",
-    paymentLabel: "約 17,600 元／月",
-    planText: "預計導入智慧環控、太陽能與產地初級加工設備，提升品質穩定度並擴大在地雇用。",
-    requiredScore: 90,
+    id: "low-carbon-machine",
+    category: "設備補助",
+    name: "低碳農機共購補助",
+    amount: "3,000 綠點",
+    term: "每季審查",
+    rate: "最高補助 30%",
+    description: "以綠點提出低碳農機共購補助，串連農會、政府與企業永續預算。",
+    purpose: "節能農機與共同使用設備",
+    suggestedAmount: "1",
+    suggestedLabel: "1 件補助申請",
+    paymentLabel: "扣除 3,000 綠點",
+    planText: "申請電動搬運設備共購補助，預計由三戶共同使用並回報節能成果。",
+    requiredScore: 3000,
   },
 ] as const;
-
-const localProjects = [
+const localProjects: LocalProject[] = [
   {
     id: "water",
     kind: "support" as const,
@@ -322,11 +393,10 @@ const localProjects = [
   },
 ] as const;
 
-type LocalProject = (typeof localProjects)[number];
-
 function getReceiptNumber(item: LocalProject) {
-  const index = Math.max(localProjects.findIndex((project) => project.id === item.id), 0);
-  return `GI-20260731-${String(186 + index).padStart(4, "0")}`;
+  const index = localProjects.findIndex((project) => project.id === item.id);
+  const customNumber = item.id.split("").reduce((sum, character) => sum + character.charCodeAt(0), 0) % 9000;
+  return `GI-20260731-${String(index >= 0 ? 186 + index : 1000 + customNumber).padStart(4, "0")}`;
 }
 
 const localProjectStories = {
@@ -354,7 +424,7 @@ const localProjectStories = {
     quote: "果子成熟後，每多等一天都是風險；冷藏穩定，農人的努力才能完整送到消費者手上。",
     paragraphs: [
       "美珍的果園離主要集貨點較遠，採收旺季常因冷藏空間不足而增加損耗。老舊冰櫃耗電，也無法穩定維持適合鮮果的溫度。",
-      "她計畫汰換節能冷藏設備，並以太陽能分擔白天用電。平台將持續記錄耗電與損耗率，讓設備改善成為可驗證的綠色信用成果。",
+      "她計畫汰換節能冷藏設備，並以太陽能分擔白天用電。平台將持續記錄耗電與損耗率，讓設備改善成為可追溯的永續成果。",
     ],
   },
   "circular-pack": {
@@ -422,14 +492,35 @@ const localProjectStories = {
   },
 } as const;
 
-const cycle = [
-  ["綠色消費", "購買小農與符合資格的綠色商品", ShoppingBasket],
-  ["取得綠點", "合作通路發放，或回傳消費證明", Receipt],
-  ["支持或兌換", "投入改善專案，或兌換小農商品", HandCoins],
-  ["改善生產", "升級設備、耕作與循環生產方式", Sprout],
-  ["提升信用", "永續成果累積為可信的綠色信用", BadgeCheck],
-  ["金融投入", "資源回到地方，擴大綠色消費選擇", Building2],
-] as const;
+const roleCycleDetails = {
+  consumer: {
+    label: "消費者",
+    short: "綠色行動者",
+    icon: User,
+    tone: "consumer",
+    source: ["購買綠色商品取得消費回饋", "搭乘大眾運輸、改用電子帳單", "購買節能家電或完成政府企業任務"],
+    incentive: ["每次行動立即看見綠點回饋", "優先推薦所在地附近的小農", "支持後取得可追蹤的影響力收據"],
+    benefit: ["兌換可追溯的小農好物", "直接支持產地改善專案", "把日常選擇累積成地方影響力"],
+  },
+  farmer: {
+    label: "合作小農",
+    short: "在地生產者",
+    icon: Sprout,
+    tone: "farmer",
+    source: ["消費者兌換商品帶來綠點收入", "改善專案接受消費者直接支持", "企業配對及永續成果獎勵"],
+    incentive: ["農產履歷與無農藥資料提升曝光", "友善耕作成果轉成可信募資條件", "透明回報可獲得更多合作機會"],
+    benefit: ["向農會兌換農具與節水設備", "取得檢測、轉型輔導與農業補助", "穩定訂單並持續改善生產環境"],
+  },
+  institution: {
+    label: "銀行／政府／企業",
+    short: "綠點推動者",
+    icon: Building2,
+    tone: "institution",
+    source: ["把 ESG、政策或員工福利預算轉為綠點", "與商家及公用事業共同配對點數", "依節能、交通與電子帳單任務發放"],
+    incentive: ["用明確獎勵提高綠色行動參與率", "串連地方創生、農業與淨零政策", "取得可追蹤的點數流向與成果資料"],
+    benefit: ["累積 ESG 揭露與計畫成效證據", "提升在地小農及永續經濟效益", "持續優化政策與企業激勵方案"],
+  },
+} satisfies Record<Role, { label: string; short: string; icon: typeof User; tone: string; source: string[]; incentive: string[]; benefit: string[] }>;
 
 const stories = [
   {
@@ -445,10 +536,10 @@ const stories = [
     quote: "把每次觀察寫下來，才知道土地真的往哪裡改變。",
     paragraphs: [
       "天剛亮，阿蘭先巡過每一排蔬菜。她不只看葉色與蟲害，也檢查滴灌壓力、土壤濕度和前一天的用水量。這些細小但固定的工作，慢慢形成可追溯的永續生產資料。",
-      "當設備改善前後的差異被記錄，平台就能把田間行動轉成綠色信用。消費者支持的不只是眼前的一把青菜，也是在幫助農園持續採用更省水、更穩定的生產方式。",
+      "當設備改善前後的差異被記錄，平台就能把田間行動轉成成果透明度。消費者支持的不只是眼前的一把青菜，也是在幫助農園持續採用更省水、更穩定的生產方式。",
     ],
-    metrics: [["18%", "預估節水"], ["4 分", "信用提升"], ["100%", "生產可追溯"]],
-    steps: [["看見問題", "灌溉用水不易精準控制"], ["採取行動", "分區滴灌並每日留下紀錄"], ["成果回寫", "驗證節水成果並更新綠色信用"]],
+    metrics: [["18%", "預估節水"], ["4%", "透明度提升"], ["100%", "生產可追溯"]],
+    steps: [["看見問題", "灌溉用水不易精準控制"], ["採取行動", "分區滴灌並每日留下紀錄"], ["成果回寫", "驗證節水成果並更新成果透明度"]],
   },
   {
     id: "green-equipment",
@@ -463,28 +554,28 @@ const stories = [
     quote: "機器幫我們省下的，不只是時間，也讓每一批收成都更完整。",
     paragraphs: [
       "過去採收旺季全靠人力追趕，遇到天候變化時，常來不及在最佳時間完成。團隊先記錄損耗、油耗與作業時間，再選擇適合田區規模的採收設備，而不是直接購入最大機型。",
-      "這份改善計畫成為資金申請的具體用途。金融機構能看到預估效益、設備報價和綠色信用，農戶也能用後續生產資料回報設備是否真的發揮作用。",
+      "這份改善計畫會公開需求、執行里程碑與預估效益。消費者能看懂綠點支持的用途，小農也能用後續生產資料回報設備是否真的發揮作用。",
     ],
-    metrics: [["12%", "降低採收耗損"], ["23%", "縮短作業時間"], ["80 萬", "可媒合額度"]],
-    steps: [["盤點需求", "記錄旺季工時與採收耗損"], ["媒合設備", "以綠色信用申請改善資金"], ["持續驗證", "回報油耗、產量與品質變化"]],
+    metrics: [["12%", "降低採收耗損"], ["23%", "縮短作業時間"], ["80,000 點", "專案支持目標"]],
+    steps: [["盤點需求", "記錄旺季工時與採收耗損"], ["上架專案", "公開設備需求與綠點目標"], ["持續驗證", "回報油耗、產量與品質變化"]],
   },
   {
-    id: "green-credit",
-    label: "綠色金融",
-    title: "讓信用來自真實的永續行動",
+    id: "impact-tracking",
+    label: "綠色消費",
+    title: "讓每一筆支持，都能看見後續成果",
     cover: "https://images.pexels.com/photos/18703337/pexels-photo-18703337.jpeg?auto=compress&cs=tinysrgb&w=1000",
-    detail: "/stories/green-credit-detail.webp",
+    detail: "/stories/impact-tracking-detail.webp",
     detailAlt: "淑芬在同一條灌溉水道測量水位並記錄數據",
     person: "淑芬",
     place: "清泉農園・花蓮",
-    intro: "當用水、設備與耕作成果有資料可驗證，小農長期的努力就能成為金融機構看得懂的信用依據。",
+    intro: "當用水、設備與耕作成果有資料可驗證，消費者與合作夥伴就能看懂小農的行動進度與實際改變。",
     quote: "以前只能說我們很努力，現在可以把改變一筆一筆證明出來。",
     paragraphs: [
-      "淑芬每週量測灌溉水位與作物狀態，累積成一份完整的用水紀錄。平台把紀錄完整度、改善幅度與產銷透明度納入評估，而不是只看傳統財務資料。",
-      "完成設備證明後，她的綠色信用由 82 分提升到 86 分，也解鎖更合適的設備改善方案。金融資源因此能與真實永續行動連在一起。",
+      "淑芬每週量測灌溉水位與作物狀態，累積成一份完整的用水紀錄。平台整理紀錄完整度、改善幅度與產銷透明度，讓支持者能直接追蹤專案是否持續前進。",
+      "完成設備證明後，她的成果透明度由 82% 提升到 86%，也讓節水改善專案達到公開上架條件。綠點支持因此能與真實永續行動連在一起。",
     ],
-    metrics: [["42 筆", "水資源紀錄"], ["82→86", "綠色信用"], ["68 萬", "建議申請額"]],
-    steps: [["持續記錄", "量測用水與設備運作狀況"], ["資料驗證", "確認紀錄來源與改善幅度"], ["信用媒合", "更新分數並推薦合適資金"]],
+    metrics: [["42 筆", "水資源紀錄"], ["82→86", "成果透明度"], ["68,000 點", "專案支持目標"]],
+    steps: [["持續記錄", "量測用水與設備運作狀況"], ["資料驗證", "確認紀錄來源與改善幅度"], ["成果公開", "更新專案頁並公開下一階段"]],
   },
   {
     id: "visible-impact",
@@ -499,10 +590,10 @@ const stories = [
     quote: "有人看見我們做的改變，我們也更願意把過程完整留下來。",
     paragraphs: [
       "美惠把作物照片、資材使用和採收批次上傳平台。消費者支持後，不只收到一張感謝訊息，而是能持續看到資源用在哪裡、專案完成到哪一步。",
-      "當成果被驗證，資料會同步更新小農的綠色信用，也成為合作機構的影響力報告。支持、成果與下一輪資金因此形成循環。",
+      "當成果被驗證，資料會同步更新小農的成果透明度，也成為平台合作夥伴的影響力報告。支持、回報與下一次綠色選擇因此形成循環。",
     ],
     metrics: [["12,680", "累積支持綠點"], ["86 張", "影響力收據"], ["15%", "資源效率提升"]],
-    steps: [["綠點投入", "消費者選擇支持改善專案"], ["進度追蹤", "小農回傳採購與執行紀錄"], ["成果公開", "產生收據並回寫綠色信用"]],
+    steps: [["綠點投入", "消費者選擇支持改善專案"], ["進度追蹤", "小農回傳採購與執行紀錄"], ["成果公開", "產生收據並回寫成果透明度"]],
   },
   {
     id: "start-cycle",
@@ -513,14 +604,14 @@ const stories = [
     detailAlt: "鳳珠沿著同一片梯田行走並帶著準備種植的幼苗",
     person: "鳳珠",
     place: "山里梯田・花蓮",
-    intro: "不論從消費、小農生產或金融合作開始，每一個角色都能讓地方的改變多走一步。",
+    intro: "不論從消費、商品上架或地方合作開始，每一個角色都能讓地方的改變多走一步。",
     quote: "一開始只想把田顧好，後來才發現，每份紀錄都能為下一步多開一扇門。",
     paragraphs: [
-      "鳳珠從三塊梯田的生產紀錄開始，把耕作方式、資材與收成一一整理。當資料逐漸完整，她能看見自己的改善方向，也更容易向合作機構說明資金真正要解決的問題。",
-      "綠色循環不要求一次做到完美。消費者的一次支持、小農的一筆紀錄、金融機構的一次媒合，都能成為地方持續前進的起點。",
+      "鳳珠從三塊梯田的生產紀錄開始，把耕作方式、資材與收成一一整理。當資料逐漸完整，她能看見自己的改善方向，也更容易向平台合作夥伴說明綠點支持真正要解決的問題。",
+      "綠色循環不要求一次做到完美。消費者的一次支持、小農的一筆紀錄、合作夥伴的一次協作，都能成為地方持續前進的起點。",
     ],
-    metrics: [["3 塊", "示範田區"], ["6 個月", "改善週期"], ["75 分", "首項方案門檻"]],
-    steps: [["選擇角色", "從消費者、小農或金融端開始"], ["完成行動", "回傳證明、補充資料或媒合資源"], ["形成循環", "成果回到信用並創造更多綠色選擇"]],
+    metrics: [["3 塊", "示範田區"], ["6 個月", "改善週期"], ["75%", "首項方案公開度"]],
+    steps: [["選擇角色", "從消費者、小農或合作夥伴端開始"], ["完成行動", "回傳證明、補充資料或共享成果"], ["形成循環", "成果回到平台並創造更多綠色選擇"]],
   },
 ] as const;
 
@@ -540,8 +631,8 @@ const heroSlides = [
   {
     image: "https://images.pexels.com/photos/18703337/pexels-photo-18703337.jpeg?auto=compress&cs=tinysrgb&w=1600",
     alt: "農業生產成果與永續行動紀錄",
-    label: "綠色金融",
-    title: "真實永續行動，累積可信的綠色信用",
+    label: "綠色消費",
+    title: "每一筆綠點，都留下看得見的成果",
   },
   {
     image: "https://images.pexels.com/photos/8232776/pexels-photo-8232776.jpeg?auto=compress&cs=tinysrgb&w=1600",
@@ -604,6 +695,11 @@ export function GreenPlatformDemo() {
   const [loginRole, setLoginRole] = useState<Role>("consumer");
   const [modal, setModal] = useState<Modal>(null);
   const [points, setPoints] = useState(1280);
+  const [farmerPoints, setFarmerPoints] = useState(3680);
+  const [farmerProducts, setFarmerProducts] = useState<FarmerProduct[]>(initialFarmerProducts);
+  const [farmerProjects, setFarmerProjects] = useState<LocalProject[]>([]);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [incentivePlans, setIncentivePlans] = useState<IncentiveProgram[]>(incentivePrograms);
   const [supportedProjectIds, setSupportedProjectIds] = useState<string[]>([]);
   const [redeemedProjectIds, setRedeemedProjectIds] = useState<string[]>([]);
   const [orderStages, setOrderStages] = useState<Record<string, number>>({});
@@ -611,7 +707,7 @@ export function GreenPlatformDemo() {
   const [invoiceStage, setInvoiceStage] = useState<"form" | "scanning" | "success">("form");
   const [period, setPeriod] = useState("半年");
   const [region, setRegion] = useState("全部地區");
-  const [selectedOfferId, setSelectedOfferId] = useState("equipment");
+  const [selectedOfferId, setSelectedOfferId] = useState("soil-test");
   const [fundingStep, setFundingStep] = useState(0);
   const [selectedFarmerName, setSelectedFarmerName] = useState(farmers[0].name);
   const [selectedProjectId, setSelectedProjectId] = useState("water");
@@ -620,11 +716,12 @@ export function GreenPlatformDemo() {
   const [heroSlide, setHeroSlide] = useState(0);
   const [heroPaused, setHeroPaused] = useState(false);
   const [consumerPage, setConsumerPage] = useState<"overview" | "local" | "invoice" | "receipt" | "orders">("overview");
-  const [farmerPage, setFarmerPage] = useState<"overview" | "evidence" | "funding">("overview");
+  const [farmerPage, setFarmerPage] = useState<"overview" | "products" | "projects" | "evidence" | "funding">("overview");
   const [institutionPage, setInstitutionPage] = useState<"overview" | "portfolio" | "report">("overview");
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [selectedStoryId, setSelectedStoryId] = useState<string>(stories[0].id);
   const [toast, setToast] = useState("");
+  const [cycleOpen, setCycleOpen] = useState(false);
 
   useEffect(() => {
     if (!toast) return;
@@ -643,11 +740,13 @@ export function GreenPlatformDemo() {
   const score = evidence ? 86 : 82;
   const supported = supportedProjectIds.length > 0;
   const redeemed = redeemedProjectIds.length > 0;
-  const supportedProjects = localProjects.filter((item) => item.kind === "support" && supportedProjectIds.includes(item.id));
-  const redeemedProjects = localProjects.filter((item) => item.kind === "redeem" && redeemedProjectIds.includes(item.id));
+  const availableLocalProjects = useMemo(() => [...farmerProjects, ...localProjects], [farmerProjects]);
+  const managedFarmerProjects = useMemo(() => [localProjects[0], ...farmerProjects], [farmerProjects]);
+  const supportedProjects = availableLocalProjects.filter((item) => item.kind === "support" && supportedProjectIds.includes(item.id));
+  const redeemedProjects = availableLocalProjects.filter((item) => item.kind === "redeem" && redeemedProjectIds.includes(item.id));
   const receiptItems = [...supportedProjects, ...redeemedProjects];
-  const selectedProject = localProjects.find((item) => item.id === selectedProjectId) || localProjects[0];
-  const receiptProject = localProjects.find((item) => item.id === lastSupportedId) || localProjects[0];
+  const selectedProject = availableLocalProjects.find((item) => item.id === selectedProjectId) || localProjects[0];
+  const receiptProject = availableLocalProjects.find((item) => item.id === lastSupportedId) || localProjects[0];
   const dimensions = useMemo(
     () => baseDimensions.map((item) => item.name === "低碳作業" && evidence ? { ...item, score: 88 } : item),
     [evidence],
@@ -663,19 +762,63 @@ export function GreenPlatformDemo() {
     setModal("story");
   }
 
-  function openFunding(id = "equipment") {
+  function openFunding(id = "soil-test") {
     setSelectedOfferId(id);
     setFundingStep(0);
     setModal("offer");
   }
+  function openProduct(productId: string | null = null) {
+    setSelectedProductId(productId);
+    setModal("product");
+  }
 
+  function saveFarmerProduct(values: Omit<FarmerProduct, "id" | "image">) {
+    if (selectedProductId) {
+      setFarmerProducts((items) => items.map((item) => item.id === selectedProductId ? { ...item, ...values } : item));
+      setToast(`${values.title} 的綠點與庫存已更新`);
+    } else {
+      const product: FarmerProduct = {
+        ...values,
+        id: `product-${Date.now()}`,
+        image: localProjects.find((item) => item.id === "veggie")?.image ?? localProjects[0].image,
+      };
+      setFarmerProducts((items) => [product, ...items]);
+      setToast(`${values.title} 已上架，附近消費者現在可以看見`);
+    }
+    setModal(null);
+  }
+
+  function saveFarmerProject(values: ImprovementProjectDraft) {
+    const project: LocalProject = {
+      ...values,
+      id: `farmer-project-${Date.now()}`,
+      kind: "support",
+      image: localProjects[0].image,
+      title: `阿蘭・禾日友善農園｜${values.title}`,
+      farmer: "阿蘭｜禾日友善農園",
+      progress: 0,
+      raisedPoints: 0,
+      supporters: 0,
+    };
+    setFarmerProjects((items) => [project, ...items]);
+    setFarmerPage("projects");
+    setModal(null);
+    setToast(`${values.title} 已公開，消費者現在可以投入綠點支持`);
+  }
+
+  function saveIncentivePlan(values: Omit<IncentiveProgram, "id" | "progress">) {
+    const plan: IncentiveProgram = { ...values, id: `program-${Date.now()}`, progress: 0 };
+    setIncentivePlans((items) => [plan, ...items]);
+    setModal(null);
+    setToast(`${values.name} 已建立並加入綠點激勵計畫`);
+  }
   function openPortfolio(name = farmers[0].name) {
     setSelectedFarmerName(name);
     setModal("portfolio");
   }
 
   function openLocalProject(id: string) {
-    const project = localProjects.find((item) => item.id === id) || localProjects[0];
+    const project = availableLocalProjects.find((item) => item.id === id) || localProjects[0];
     setSelectedProjectId(project.id);
     if (project.kind === "support" && supportedProjectIds.includes(project.id)) {
       setLastSupportedId(project.id);
@@ -707,7 +850,7 @@ export function GreenPlatformDemo() {
   }
 
   function openLocalProjectStory(id: string) {
-    const project = localProjects.find((item) => item.id === id) || localProjects[0];
+    const project = availableLocalProjects.find((item) => item.id === id) || localProjects[0];
     setSelectedProjectId(project.id);
     setModal("local-story");
   }
@@ -730,13 +873,18 @@ export function GreenPlatformDemo() {
 
   function resetDemo() {
     setPoints(1280);
+    setFarmerPoints(3680);
+    setFarmerProducts(initialFarmerProducts);
+    setFarmerProjects([]);
+    setSelectedProductId(null);
+    setIncentivePlans(incentivePrograms);
     setSupportedProjectIds([]);
     setRedeemedProjectIds([]);
     setOrderStages({});
     setEvidence(false);
     setInvoiceStage("form");
     setFundingStep(0);
-    setSelectedOfferId("equipment");
+    setSelectedOfferId("soil-test");
     setSelectedProjectId("water");
     setLastSupportedId("water");
     setLastRedeemedId("veggie");
@@ -760,6 +908,12 @@ export function GreenPlatformDemo() {
     if (!alreadySupported) {
       setPoints((value) => Math.max(0, value - selectedProject.points));
       setSupportedProjectIds((ids) => [...ids, selectedProject.id]);
+      setFarmerProjects((items) => items.map((item) => {
+        if (item.id !== selectedProject.id) return item;
+        const raisedPoints = Math.min(item.targetPoints ?? 0, (item.raisedPoints ?? 0) + item.points);
+        const progress = item.targetPoints ? Math.min(100, Math.round((raisedPoints / item.targetPoints) * 100)) : item.progress;
+        return { ...item, raisedPoints, progress, supporters: (item.supporters ?? 0) + 1 };
+      }));
     }
     setLastSupportedId(selectedProject.id);
     setModal("receipt");
@@ -784,17 +938,13 @@ export function GreenPlatformDemo() {
   }
 
   function downloadReport() {
-    const csv = [
-      "農戶,地區,作物,綠色信用,狀態,申請資金,資金用途,資料完整度",
-      ...farmers.map((item) => [item.name, item.area, item.crop, item.score, item.status, item.amount, item.purpose, `${item.completeness}%`].join(",")),
-    ].join("\n");
-    const url = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" }));
     const link = document.createElement("a");
-    link.href = url;
-    link.download = "綠色金融影響力摘要-demo.csv";
+    link.href = "/reports/GFES_green_consumption_impact_summary_2026H1.pdf";
+    link.download = "GFES_綠色消費與在地小農影響力摘要_2026上半年.pdf";
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(url);
-    setToast("影響力摘要已下載");
+    link.remove();
+    setToast("四頁正式版 PDF 影響力摘要已下載");
   }
 
   function downloadReceipt(item: LocalProject = receiptProject) {
@@ -858,20 +1008,40 @@ export function GreenPlatformDemo() {
           onSubmit={() => {
             setEvidence(true);
             setModal(null);
-            setToast("信用分數提升至 86");
+            setToast("成果透明度提升至 86%");
           }}
         />
       )}
       {modal === "offer" && (
         <OfferModal
-          score={score}
+          balance={farmerPoints}
           offerId={selectedOfferId}
           step={fundingStep}
           setStep={setFundingStep}
+          onRedeem={(cost) => { setFarmerPoints((value) => Math.max(0, value - cost)); setToast(`已兌換 ${cost.toLocaleString()} 綠點，農會將協助後續領取`); }}
           onClose={() => setModal(null)}
         />
       )}
-      {modal === "portfolio" && (
+      {modal === "farmer-project" && (
+        <ImprovementProjectModal
+          onClose={() => setModal(null)}
+          onSubmit={saveFarmerProject}
+        />
+      )}
+      {modal === "product" && (
+        <ProductModal
+          key={selectedProductId ?? "new-product"}
+          product={farmerProducts.find((item) => item.id === selectedProductId) ?? null}
+          onClose={() => setModal(null)}
+          onSubmit={saveFarmerProduct}
+        />
+      )}
+      {modal === "program" && (
+        <ProgramModal
+          onClose={() => setModal(null)}
+          onSubmit={saveIncentivePlan}
+        />
+      )}      {modal === "portfolio" && (
         <InstitutionPortfolioModal
           selectedName={selectedFarmerName}
           setSelectedName={setSelectedFarmerName}
@@ -905,13 +1075,15 @@ export function GreenPlatformDemo() {
               )}
               {role === "farmer" && (
                 <>
-                  <button className={farmerPage === "evidence" ? "active" : ""} onClick={() => setFarmerPage("evidence")}><Upload />永續資料</button>
-                  <button className={farmerPage === "funding" ? "active" : ""} onClick={() => setFarmerPage("funding")}><Banknote />信用解鎖資金方案</button>
+                  <button className={farmerPage === "products" ? "active" : ""} onClick={() => setFarmerPage("products")}><ShoppingBasket />商品管理</button>
+                  <button className={farmerPage === "projects" ? "active" : ""} onClick={() => setFarmerPage("projects")}><HeartHandshake />改善專案計畫</button>
+                  <button className={farmerPage === "evidence" ? "active" : ""} onClick={() => setFarmerPage("evidence")}><Upload />永續證明</button>
+                  <button className={farmerPage === "funding" ? "active" : ""} onClick={() => setFarmerPage("funding")}><PackageCheck />農業資源兌換</button>
                 </>
               )}
               {role === "institution" && (
                 <>
-                  <button className={institutionPage === "portfolio" ? "active" : ""} onClick={() => setInstitutionPage("portfolio")}><Users />農戶組合</button>
+                  <button className={institutionPage === "portfolio" ? "active" : ""} onClick={() => setInstitutionPage("portfolio")}><PackageCheck />綠點激勵計畫</button>
                   <button className={institutionPage === "report" ? "active" : ""} onClick={() => setInstitutionPage("report")}><Download />影響力報告</button>
                 </>
               )}
@@ -923,10 +1095,10 @@ export function GreenPlatformDemo() {
             <header className="dashboard-top">
               <div>
                 <h1>{role === "consumer"
-                  ? ({ overview: "消費者中心", local: "用綠點支持在地", invoice: "回傳消費證明", receipt: "影響力收據", orders: "兌換訂單" } as const)[consumerPage]
+                  ? ({ overview: "消費者中心", local: "用綠點支持在地｜您的所在地：台北市大安區", invoice: "回傳消費證明", receipt: "影響力收據", orders: "兌換訂單" } as const)[consumerPage]
                   : role === "farmer"
-                    ? ({ overview: "小農中心", evidence: "永續資料", funding: "信用解鎖資金方案" } as const)[farmerPage]
-                    : ({ overview: "金融合作機構中心", portfolio: "農戶組合", report: "影響力報告" } as const)[institutionPage]}</h1>
+                    ? ({ overview: "小農中心", products: "商品管理", projects: "改善專案計畫", evidence: "永續證明", funding: "農業資源兌換" } as const)[farmerPage]
+                    : ({ overview: "銀行／政府／企業中心", portfolio: "綠點激勵計畫", report: "ESG 影響力報告" } as const)[institutionPage]}</h1>
                 <p>{role === "consumer" && consumerPage === "local"
                   ? "選擇支持改善專案或兌換小農好物，讓綠點回到土地"
                   : role === "consumer" && consumerPage === "invoice"
@@ -935,14 +1107,18 @@ export function GreenPlatformDemo() {
                       ? "模擬查看小農好物從訂單成立、備貨、配送到完成的進度"
                     : role === "consumer" && consumerPage === "receipt"
                       ? "查看綠點流向、小農行動與地方成果"
+                      : role === "farmer" && farmerPage === "products"
+                        ? "管理商品、庫存、配送區域，以及綁定農產履歷與無農藥證明"
+                      : role === "farmer" && farmerPage === "projects"
+                        ? "填寫產地改善計畫、綠點用途與募資目標，公開給消費者支持"
                       : role === "farmer" && farmerPage === "evidence"
-                        ? "管理永續生產紀錄，提升資料完整度與綠色信用"
+                        ? "管理農產履歷、無農藥檢測與友善耕作紀錄"
                         : role === "farmer" && farmerPage === "funding"
-                          ? "依綠色信用逐步解鎖資金支持與優惠融資"
+                          ? "使用收到的綠點向合作農會兌換農具、檢測、輔導與補助"
                           : role === "institution" && institutionPage === "portfolio"
-                            ? "檢視農戶信用、資料完整度與資金媒合狀態"
+                            ? "建立綠點激勵任務，追蹤參與、點數流向與地方效益"
                             : role === "institution" && institutionPage === "report"
-                              ? "彙整綠色金融投入、環境成果與地方影響"
+                              ? "彙整綠色消費投入、環境成果與地方影響"
                               : "以下資料皆為提案展示用的模擬資料"}</p>
               </div>
               <button className="profile-button" onClick={openLogin}>
@@ -967,6 +1143,7 @@ export function GreenPlatformDemo() {
             {role === "consumer" && consumerPage === "local" && (
               <LocalSupportDashboard
                 points={points}
+                projects={availableLocalProjects}
                 supportedIds={supportedProjectIds}
                 redeemedIds={redeemedProjectIds}
                 onProject={openLocalProject}
@@ -997,24 +1174,35 @@ export function GreenPlatformDemo() {
             {role === "farmer" && farmerPage === "overview" && (
               <FarmerDashboard
                 score={score}
+                farmerPoints={farmerPoints}
                 evidence={evidence}
                 dimensions={dimensions}
                 onEvidence={() => setFarmerPage("evidence")}
-                onOffer={openFunding}
+                onProducts={() => setFarmerPage("products")}
+                onProjects={() => setFarmerPage("projects")}
+                onBenefits={() => setFarmerPage("funding")}
+              />
+            )}
+            {role === "farmer" && farmerPage === "products" && (
+              <FarmerProductsPage products={farmerProducts} onAdd={() => openProduct(null)} onEdit={(id) => openProduct(id)} />
+            )}
+            {role === "farmer" && farmerPage === "projects" && (
+              <FarmerProjectsPage
+                projects={managedFarmerProjects}
+                onCreate={() => setModal("farmer-project")}
+                onPreview={openLocalProjectStory}
               />
             )}
             {role === "farmer" && farmerPage === "evidence" && (
               <FarmerEvidencePage
                 evidence={evidence}
-                onSubmit={() => { setEvidence(true); setToast("信用分數提升至 86"); }}
+                onSubmit={() => { setEvidence(true); setToast("成果透明度提升至 86%"); }}
                 onFunding={() => setFarmerPage("funding")}
               />
             )}
             {role === "farmer" && farmerPage === "funding" && (
               <FarmerFundingPage
-                score={score}
-                evidence={evidence}
-                onEvidence={() => setFarmerPage("evidence")}
+                farmerPoints={farmerPoints}
                 onOffer={openFunding}
               />
             )}
@@ -1027,7 +1215,7 @@ export function GreenPlatformDemo() {
               />
             )}
             {role === "institution" && institutionPage === "portfolio" && (
-              <InstitutionPortfolioPage selectedName={selectedFarmerName} setSelectedName={setSelectedFarmerName} />
+              <InstitutionPortfolioPage programs={incentivePlans} onCreate={() => setModal("program")} />
             )}
             {role === "institution" && institutionPage === "report" && (
               <InstitutionReportPage onDownload={downloadReport} />
@@ -1035,7 +1223,7 @@ export function GreenPlatformDemo() {
           </main>
         </div>
 
-        <nav className={`mobile-nav ${role === "consumer" ? "mobile-nav-consumer" : ""}`}>
+        <nav className={`mobile-nav ${role === "consumer" ? "mobile-nav-consumer" : role === "farmer" ? "mobile-nav-farmer" : ""}`}>
           <button
             className={(role === "consumer" ? consumerPage : role === "farmer" ? farmerPage : institutionPage) === "overview" ? "active" : ""}
             onClick={() => role === "consumer" ? setConsumerPage("overview") : role === "farmer" ? setFarmerPage("overview") : setInstitutionPage("overview")}
@@ -1050,13 +1238,15 @@ export function GreenPlatformDemo() {
           )}
           {role === "farmer" && (
             <>
-              <button className={farmerPage === "evidence" ? "active" : ""} onClick={() => setFarmerPage("evidence")}><Upload />永續資料</button>
-              <button className={farmerPage === "funding" ? "active" : ""} onClick={() => setFarmerPage("funding")}><Banknote />信用方案</button>
+              <button className={farmerPage === "products" ? "active" : ""} onClick={() => setFarmerPage("products")}><ShoppingBasket />商品</button>
+              <button className={farmerPage === "projects" ? "active" : ""} onClick={() => setFarmerPage("projects")}><HeartHandshake />改善</button>
+              <button className={farmerPage === "evidence" ? "active" : ""} onClick={() => setFarmerPage("evidence")}><Upload />證明</button>
+              <button className={farmerPage === "funding" ? "active" : ""} onClick={() => setFarmerPage("funding")}><PackageCheck />資源</button>
             </>
           )}
           {role === "institution" && (
             <>
-              <button className={institutionPage === "portfolio" ? "active" : ""} onClick={() => setInstitutionPage("portfolio")}><Users />農戶</button>
+              <button className={institutionPage === "portfolio" ? "active" : ""} onClick={() => setInstitutionPage("portfolio")}><PackageCheck />計畫</button>
               <button className={institutionPage === "report" ? "active" : ""} onClick={() => setInstitutionPage("report")}><Download />報告</button>
             </>
           )}
@@ -1110,8 +1300,8 @@ export function GreenPlatformDemo() {
 
           <div className="container hero-grid">
             <div className="hero-copy">
-              <span className="eyebrow">Green Finance, Local Impact</span>
-              <h1><span>讓每一次消費</span><span>都成為土地向前的力量</span></h1>
+              <span className="eyebrow">Green Points, Local Impact</span>
+              <h1><span>讓每一次綠色行動</span><span>都成為在地小農的力量</span></h1>
               <div className="hero-actions">
                 <button className="button button-primary" onClick={openLogin}>開始體驗<ArrowRight /></button>
                 <button className="button button-secondary" onClick={() => document.querySelector("#cycle")?.scrollIntoView()}>
@@ -1119,9 +1309,9 @@ export function GreenPlatformDemo() {
                 </button>
               </div>
               <div className="trust-row">
-                <span><BadgeCheck />消費可追溯</span>
-                <span><Leaf />永續有依據</span>
-                <span><HeartHandshake />支持看得見</span>
+                <span><BadgeCheck />多元綠點來源</span>
+                <span><Leaf />附近小農優先</span>
+                <span><HeartHandshake />成果可追溯</span>
               </div>
             </div>
 
@@ -1164,7 +1354,7 @@ export function GreenPlatformDemo() {
             <header className="section-heading">
               <span className="eyebrow">從土地開始</span>
               <h2>看見每一份綠色選擇背後的行動</h2>
-              <p>從田間生產、消費回饋到金融資源，讓地方農業的努力被看見、被支持，也能持續成長。</p>
+              <p>從綠色消費、低碳交通、電子帳單到企業與政府激勵，讓每一點支持都有清楚去向，也讓地方農業持續成長。</p>
             </header>
             <div className="story-grid">
               <StoryCard story={stories[0]} large onClick={() => openStory(stories[0].id)} />
@@ -1180,22 +1370,17 @@ export function GreenPlatformDemo() {
           </div>
         </section>
 
-        <section className="section" id="cycle">
+        <section className="section cycle-section" id="cycle">
           <div className="container">
-            <header className="section-heading center">
-              <span className="eyebrow">綠色金融循環</span>
-              <h2>從一筆消費，到一座農村的改變</h2>
-              <p>自動取得綠點或回傳消費證明，最終都匯入同一個可追溯的支持循環。</p>
+            <header className="section-heading center cycle-section-heading">
+              <span className="eyebrow">綠色消費循環</span>
+              <h2>從一個綠色行動，到一座農村的改變</h2>
+              <p>消費者、合作小農與銀行／政府／企業共享同一套綠點循環，讓獎勵、支持與成果持續回到地方。</p>
+              <button className="button button-primary cycle-reveal-button" onClick={() => setCycleOpen((open) => !open)} aria-expanded={cycleOpen} aria-controls="role-cycle-explorer">
+                {cycleOpen ? "收合綠點循環" : "查看三方綠點循環"}<ChevronRight className={cycleOpen ? "open" : ""} />
+              </button>
             </header>
-            <div className="cycle-track">
-              {cycle.map(([title, text, Icon], index) => (
-                <article className="cycle-step" key={title}>
-                  <span className="step-number">0{index + 1}</span>
-                  <span className="step-icon"><Icon /></span>
-                  <h3>{title}</h3><p>{text}</p>
-                </article>
-              ))}
-            </div>
+            {cycleOpen && <RoleCycleExplorer />}
           </div>
         </section>
 
@@ -1204,13 +1389,13 @@ export function GreenPlatformDemo() {
             <header className="section-heading">
               <span className="eyebrow">共同影響力</span>
               <h2>讓支持不只是一個數字</h2>
-              <p>以下為 Demo 模擬資料，展示未來如何追蹤消費、農業與金融共同創造的成果。</p>
+              <p>以下為 Demo 模擬資料，展示綠點如何從多元行動回到小農，並形成可揭露的環境、地方與永續經濟成果。</p>
             </header>
             <div className="impact-grid">
               <Impact icon={Users} value="128" label="受支持在地農戶" />
-              <Impact icon={HandCoins} value="386 萬" label="媒合綠色金融資源" />
+              <Impact icon={HandCoins} value="478,000 點" label="發放與配對綠點" />
               <Impact icon={Trees} value="62.4 噸" label="估算年度減碳成果" />
-              <Impact icon={ShoppingBasket} value="18,620" label="筆綠色消費行動" />
+              <Impact icon={ShoppingBasket} value="20,160" label="次綠色行動參與" />
             </div>
           </div>
         </section>
@@ -1219,12 +1404,73 @@ export function GreenPlatformDemo() {
       <footer className="footer">
         <div className="container footer-row">
           <Brand />
-          <span>本網站為提案 Demo，人物、故事、數字、信用評估與金融方案皆為模擬資料。</span>
+          <span>本網站為提案 Demo，人物、故事、綠點與影響成果皆為模擬資料。</span>
           <a href="https://www.pexels.com/" target="_blank" rel="noreferrer">封面來源：Pexels・故事圖為 AI 生成示意</a>
         </div>
       </footer>
       {modals}
     </div>
+  );
+}
+
+function RoleCycleExplorer() {
+  const [hoveredRole, setHoveredRole] = useState<Role | null>(null);
+  const [pinnedRole, setPinnedRole] = useState<Role | null>(null);
+  const activeRole = hoveredRole ?? pinnedRole;
+  const activeInfo = activeRole ? roleCycleDetails[activeRole] : null;
+  const roleOrder: Role[] = ["institution", "consumer", "farmer"];
+
+  return (
+    <div id="role-cycle-explorer" className={`role-cycle-explorer ${activeRole ? "has-focus" : ""}`}>
+      <div className="role-cycle-stage" aria-label="消費者、合作小農與銀行政府企業的綠點循環">
+        <div className="role-cycle-orbit" aria-hidden="true" />
+        <div className="cycle-core"><HandCoins /><strong>綠點循環</strong><small>獎勵・支持・成果</small></div>
+        <span className="cycle-link cycle-link-grant">發放與配對綠點</span>
+        <span className="cycle-link cycle-link-support">支持專案與兌換</span>
+        <span className="cycle-link cycle-link-impact">回傳成果與效益</span>
+        {roleOrder.map((key) => {
+          const info = roleCycleDetails[key];
+          const Icon = info.icon;
+          const active = activeRole === key;
+          return (
+            <button
+              type="button"
+              key={key}
+              className={`role-cycle-node role-cycle-node-${key} ${active ? "active" : ""} ${activeRole && !active ? "dimmed" : ""}`}
+              onMouseEnter={() => setHoveredRole(key)}
+              onMouseLeave={() => setHoveredRole(null)}
+              onFocus={() => setHoveredRole(key)}
+              onBlur={() => setHoveredRole(null)}
+              onClick={() => setPinnedRole((current) => current === key ? null : key)}
+              aria-pressed={pinnedRole === key}
+            >
+              <span className="role-cycle-icon"><Icon /></span>
+              <span><small>{info.short}</small><strong>{info.label}</strong><em>{active ? "正在聚焦・下方查看完整內容" : "滑鼠移入或點擊查看"}</em></span>
+            </button>
+          );
+        })}
+      </div>
+      <div className={`role-cycle-detail ${activeInfo ? "visible" : ""}`} aria-live="polite">
+        {activeInfo && activeRole ? (
+          <>
+            <header><span className={`role-cycle-detail-icon ${activeInfo.tone}`}><activeInfo.icon /></span><div><small>{activeInfo.short}</small><h3>{activeInfo.label}如何參與綠點循環</h3></div><b>角色 {roleOrder.indexOf(activeRole) + 1}／3</b></header>
+            <div className="role-cycle-detail-grid">
+              <RoleCycleList title="綠點怎麼來" items={activeInfo.source} icon={HandCoins} />
+              <RoleCycleList title="獲得綠點的誘因" items={activeInfo.incentive} icon={TrendingUp} />
+              <RoleCycleList title="綠點帶來的好處" items={activeInfo.benefit} icon={BadgeCheck} />
+            </div>
+          </>
+        ) : (
+          <div className="role-cycle-prompt"><span><RefreshCcw /></span><div><b>把滑鼠移到任一角色上</b><p>其他角色會自動變暗，並顯示這個角色的綠點來源、參與誘因與實際好處；手機可直接點擊角色。</p></div></div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RoleCycleList({ title, items, icon: Icon }: { title: string; items: string[]; icon: typeof HandCoins }) {
+  return (
+    <section><h4><Icon />{title}</h4><ul>{items.map((item) => <li key={item}>{item}</li>)}</ul></section>
   );
 }
 
@@ -1258,7 +1504,13 @@ function LocalProjectStoryModal({
   onAction: () => void;
   onClose: () => void;
 }) {
-  const story = localProjectStories[item.id as keyof typeof localProjectStories];
+  const savedStory = localProjectStories[item.id as keyof typeof localProjectStories] as ProjectStory | undefined;
+  const story: ProjectStory = savedStory ?? item.story ?? {
+    location: `${item.city ?? "合作產地"}・${item.district ?? "友善農區"}`,
+    headline: `${item.farmer}希望透過這項計畫，讓產地改善能被看見與支持`,
+    quote: "把需要改善的問題說清楚，也把每一筆綠點真正用在哪裡留下紀錄。",
+    paragraphs: [item.note, `本計畫預計將綠點投入${item.purpose}，並以${item.impact}作為後續成果追蹤方向。`],
+  };
   const isSupport = item.kind === "support";
   return (
     <ModalShell title={isSupport ? "小農改善專案故事" : "小農好物故事"} onClose={onClose} wide>
@@ -1269,7 +1521,7 @@ function LocalProjectStoryModal({
         </div>
         <div className="local-story-content">
           <section><span className="eyebrow">來自產地的故事</span><blockquote>「{story.quote}」</blockquote>{story.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</section>
-          <aside><h4>{isSupport ? "這份支持會帶來什麼" : "這次兌換支持了什麼"}</h4><div className="local-story-facts"><div><small>{isSupport ? "所需綠點" : "兌換綠點"}</small><strong>{item.points} 點</strong></div><div><small>目前進度</small><strong>{item.progress}%</strong></div><div><small>{isSupport ? "資源用途" : "配送方式"}</small><strong>{item.purpose}</strong></div><div><small>預期成果</small><strong>{item.impact}</strong></div></div><div className="progress"><span style={{ width: item.progress + "%" }} /></div><p>{isSupport ? "完成支持後，專案進度與成果將同步到你的影響力收據。" : "完成兌換後，這筆綠點會形成在地訂單並支持小農持續生產。"}</p></aside>
+          <aside><h4>{isSupport ? "這份支持會帶來什麼" : "這次兌換支持了什麼"}</h4><div className="local-story-facts"><div><small>{isSupport ? "所需綠點" : "兌換綠點"}</small><strong>{item.points} 點</strong></div><div><small>{isSupport && item.targetPoints ? "募集進度" : "目前進度"}</small><strong>{isSupport && item.targetPoints ? `${(item.raisedPoints ?? 0).toLocaleString()}／${item.targetPoints.toLocaleString()} 點` : `${item.progress}%`}</strong></div><div><small>{isSupport ? "資源用途" : "配送方式"}</small><strong>{item.purpose}</strong></div><div><small>預期成果</small><strong>{item.impact}</strong></div></div><div className="progress"><span style={{ width: item.progress + "%" }} /></div><p>{isSupport ? "完成支持後，專案進度與成果將同步到你的影響力收據。" : "完成兌換後，這筆綠點會形成在地訂單並支持小農持續生產。"}</p></aside>
         </div>
       </article>
       <div className="modal-actions local-story-actions"><button className="button button-secondary" onClick={onClose}>返回專案列表</button><button className="button button-primary" onClick={onAction}>{isSupport ? `支持 ${item.points} 點` : `兌換 ${item.points} 點`}<ArrowRight /></button></div>
@@ -1354,7 +1606,7 @@ function LoginModal({
       <div className="login-layout">
         <div className="login-photo">
           <strong>選擇你的角色，走進同一個綠色循環。</strong>
-          <span>三種角色共享同一條消費、信用與金融資源資料鏈。</span>
+          <span>三種角色共享同一條綠點、訂單、專案與成果資料鏈。</span>
         </div>
         <div>
           <span className="eyebrow">選擇體驗角色</span>
@@ -1411,12 +1663,12 @@ function ConsumerDashboard({
           <div><span>本月取得<b>510 點</b></span><span>累計支持<b>{supportTotal.toLocaleString()} 點</b></span></div>
         </div>
         <div className="quick-actions">
-          <button onClick={onInvoice}><span><ScanLine /></span><b>回傳發票<small>輸入或拍照取得綠點</small></b></button>
+          <button onClick={onInvoice}><span><ScanLine /></span><b>回傳消費證明<small>消費回饋取得綠點</small></b></button>
           <button onClick={onReceipt}><span><FileCheck2 /></span><b>影響力收據<small>查看支持流向與成果</small></b></button>
         </div>
       </section>
 
-      <Panel className="span-8" title="綠點趨勢" note="合作通路與發票驗證取得的綠點" action={
+      <Panel className="span-8" title="綠點趨勢" note="消費、交通、電子帳單與政府企業方案取得的綠點" action={
         <div className="chips">
           {["近三月", "半年", "一年"].map((item) => (
             <button className={period === item ? "active" : ""} onClick={() => setPeriod(item)} key={item}>{item}</button>
@@ -1435,10 +1687,13 @@ function ConsumerDashboard({
         </Chart>
       </Panel>
 
-      <Panel className="span-12" title="近期紀錄" note="綠點來源與使用去向">
+      <Panel className="span-12" title="近期紀錄" note="多元綠點來源與使用去向">
         <div className="activity-list">
           <Activity icon={Store} title="合作通路消費回饋" note="綠田生活市集" value="+180 點" />
-          <Activity icon={Receipt} title="發票驗證回饋" note="友善農產專區" value="+120 點" />
+          <Activity icon={Truck} title="低碳交通行動" note="大眾運輸減碳回饋" value="+80 點" />
+          <Activity icon={Building2} title="節能家電汰舊換新" note="購買一級能效冷氣獲得回饋" value="+600 點" />
+          <Activity icon={Receipt} title="改用電子帳單" note="政府與公用事業推廣方案" value="+50 點" />
+          <Activity icon={Building2} title="企業綠色行動加碼" note="員工 ESG 共好方案" value="+200 點" />
           {supportedItems.slice(-2).reverse().map((item) => <Activity key={item.id} icon={HeartHandshake} title="支持改善專案" note={item.farmer} value={`-${item.points} 點`} />)}
           {redeemed && <Activity icon={ShoppingBasket} title="兌換小農商品" note={(localProjects.find((item) => item.id === lastRedeemedId) || localProjects[2]).farmer} value={`-${(localProjects.find((item) => item.id === lastRedeemedId) || localProjects[2]).points} 點`} />}
         </div>
@@ -1449,28 +1704,42 @@ function ConsumerDashboard({
 
 function LocalSupportDashboard({
   points,
+  projects,
   supportedIds,
   redeemedIds,
   onProject,
   onLearnMore,
 }: {
   points: number;
+  projects: LocalProject[];
   supportedIds: string[];
   redeemedIds: string[];
   onProject: (id: string) => void;
   onLearnMore: (id: string) => void;
 }) {
-  const renderProject = (item: (typeof localProjects)[number]) => {
-    const done = item.kind === "support"
-      ? supportedIds.includes(item.id)
-      : redeemedIds.includes(item.id);
+  const locationById: Record<string, { city: string; district: string; distance: number }> = {
+    water: { city: "雲林縣", district: "古坑鄉", distance: 205 },
+    rice: { city: "嘉義縣", district: "民雄鄉", distance: 244 },
+    "solar-cold": { city: "花蓮縣", district: "壽豐鄉", distance: 172 },
+    "circular-pack": { city: "彰化縣", district: "溪州鄉", distance: 184 },
+    pollinator: { city: "苗栗縣", district: "卓蘭鎮", distance: 137 },
+    veggie: { city: "雲林縣", district: "西螺鎮", distance: 194 },
+    "rice-box": { city: "嘉義縣", district: "民雄鄉", distance: 244 },
+    "fruit-box": { city: "花蓮縣", district: "壽豐鄉", distance: 172 },
+    "herbal-tea": { city: "苗栗縣", district: "卓蘭鎮", distance: 137 },
+    "veggie-meal": { city: "雲林縣", district: "西螺鎮", distance: 194 },
+  };
+  const nearbyProjects = [...projects].sort((a, b) => (a.distance ?? locationById[a.id]?.distance ?? 300) - (b.distance ?? locationById[b.id]?.distance ?? 300));
+  const renderProject = (item: LocalProject) => {
+    const done = item.kind === "support" ? supportedIds.includes(item.id) : redeemedIds.includes(item.id);
+    const location = { city: item.city ?? locationById[item.id]?.city ?? "其他縣市", district: item.district ?? locationById[item.id]?.district ?? "合作地區", distance: item.distance ?? locationById[item.id]?.distance ?? 300 };
     return (
       <Project
         key={item.id}
         image={item.image}
         title={item.title}
-        note={done ? (item.kind === "support" ? `已支持 ${item.points} 點，可查看影響力收據` : "兌換完成，預計 3–5 個工作天出貨") : item.note}
-        progress={done ? 100 : item.progress}
+        note={`${location.city}｜${location.district}｜距離你約 ${location.distance} 公里｜${done ? (item.kind === "support" ? `已支持 ${item.points} 點，可查看影響力收據` : "兌換完成，預計 3–5 個工作天出貨") : item.note}`}
+        progress={item.progress}
         button={done ? (item.kind === "support" ? "查看成果" : "查看狀態") : item.kind === "support" ? `支持 ${item.points} 點` : `兌換 ${item.points} 點`}
         onClick={() => onProject(item.id)}
         onLearnMore={() => onLearnMore(item.id)}
@@ -1482,24 +1751,74 @@ function LocalSupportDashboard({
   return (
     <div className="dashboard-grid">
       <section className="local-support-banner span-12">
-        <div className="local-points">
-          <span>目前可用綠點</span>
-          <strong>{points.toLocaleString()} <small>點</small></strong>
-        </div>
-        <div className="local-support-path"><span><Sprout /></span><div><b>支持小農改善</b><small>投入設備、耕作與生態專案，成果會形成影響力收據</small></div></div>
-        <div className="local-support-path"><span><ShoppingBasket /></span><div><b>兌換小農好物</b><small>用綠點兌換小農生產商品，直接支持在地收入</small></div></div>
+        <div className="local-points"><span>目前可用綠點</span><strong>{points.toLocaleString()} <small>點</small></strong></div>
+        <div className="local-support-path"><span><Home /></span><div><b>您的所在地：台北市大安區</b><small>已依距離優先排列附近小農，可隨時切換地區</small></div></div>
+        <div className="local-support-path"><span><HeartHandshake /></span><div><b>先在地、再擴散</b><small>支持改善專案或兌換農產，綠點直接回到地方</small></div></div>
       </section>
 
-      <Panel className="span-12 local-project-panel" title="支持小農改善專案" note="每個專案都標示小農姓名、用途、目前進度與預期成果">
-        <div className="project-list project-list-expanded">
-          {localProjects.filter((item) => item.kind === "support").map(renderProject)}
-        </div>
+      <Panel className="span-12 local-project-panel" title="你附近的小農改善專案" note="依所在地距離優先排序，並揭露農產履歷、用途與預期成果">
+        <div className="project-list project-list-expanded">{nearbyProjects.filter((item) => item.kind === "support").map(renderProject)}</div>
       </Panel>
 
-      <Panel className="span-12 local-project-panel" title="兌換小農生產好物" note="從蔬果、米食到香草產品，讓綠點成為看得見的在地訂單">
-        <div className="project-list project-list-expanded">
-          {localProjects.filter((item) => item.kind === "redeem").map(renderProject)}
+      <Panel className="span-12 local-project-panel" title="你附近的小農好物" note="使用綠點兌換可追溯農產，直接形成在地訂單">
+        <div className="project-list project-list-expanded">{nearbyProjects.filter((item) => item.kind === "redeem").map(renderProject)}</div>
+      </Panel>
+    </div>
+  );
+}
+
+function FarmerProductsPage({ products, onAdd, onEdit }: { products: FarmerProduct[]; onAdd: () => void; onEdit: (id: string) => void }) {
+  const totalStock = products.reduce((sum, item) => sum + item.stock, 0);
+  return (
+    <div className="dashboard-grid">
+      <div className="metrics span-12"><Metric icon={ShoppingBasket} value={`${products.length} 款`} label="已上架商品" delta="可立即編輯" /><Metric icon={PackageCheck} value={`${totalStock} 件`} label="可售庫存" delta="即時更新" /><Metric icon={HandCoins} value="3,680 點" label="本月收到支持" delta="+18%" /><Metric icon={FileCheck2} value="92%" label="履歷完整度" delta="待補 1 項" /></div>
+      <Panel className="span-12 subpage-primary" title="已上架商品" note="點選管理商品，即可修改兌換綠點與庫存數量" action={<button className="button button-primary" onClick={onAdd}><ShoppingBasket />上架新商品</button>}>
+        <div className="project-list project-list-expanded">{products.map((item) => <Project key={item.id} image={item.image} title={item.title} note={`${item.points.toLocaleString()} 綠點・${item.proof}・庫存 ${item.stock} ${item.unit}`} progress={100} button="編輯點數與庫存" onClick={() => onEdit(item.id)} onLearnMore={() => onEdit(item.id)} gold />)}</div>
+      </Panel>
+      <Panel className="span-12" title="待處理訂單" note="商品兌換後會在此集中管理備貨與配送進度">
+        <div className="table-wrap"><table><thead><tr><th>訂單</th><th>商品</th><th>兌換數量</th><th>配送地區</th><th>狀態</th></tr></thead><tbody><tr><td><b>GF-0821</b></td><td>{products[0]?.title ?? "友善葉菜箱"}</td><td>4 件</td><td>雲林縣斗六市</td><td><span className="status-pill">備貨中</span></td></tr><tr><td><b>GF-0818</b></td><td>{products[1]?.title ?? "節水栽培米"}</td><td>6 件</td><td>嘉義縣民雄鄉</td><td><span className="status-pill">待出貨</span></td></tr><tr><td><b>GF-0812</b></td><td>{products[2]?.title ?? "減塑香草茶"}</td><td>2 件</td><td>彰化縣員林市</td><td><span className="status-pill waiting">待確認</span></td></tr></tbody></table></div>
+      </Panel>
+    </div>
+  );
+}
+
+function FarmerProjectsPage({
+  projects,
+  onCreate,
+  onPreview,
+}: {
+  projects: LocalProject[];
+  onCreate: () => void;
+  onPreview: (id: string) => void;
+}) {
+  const projectStats = projects.map((project) => {
+    const target = project.targetPoints ?? 68000;
+    const raised = project.raisedPoints ?? Math.round(target * project.progress / 100);
+    return { project, target, raised, supporters: project.supporters ?? 86 };
+  });
+  const totalTarget = projectStats.reduce((sum, item) => sum + item.target, 0);
+  const totalRaised = projectStats.reduce((sum, item) => sum + item.raised, 0);
+  const totalSupporters = projectStats.reduce((sum, item) => sum + item.supporters, 0);
+
+  return (
+    <div className="dashboard-grid">
+      <div className="metrics span-12"><Metric icon={HeartHandshake} value={`${projects.length} 項`} label="公開改善專案" delta="消費者可支持" /><Metric icon={HandCoins} value={`${totalRaised.toLocaleString()} 點`} label="目前募集綠點" delta={`目標 ${totalTarget.toLocaleString()} 點`} /><Metric icon={Users} value={`${totalSupporters} 人`} label="支持人數" delta="每筆皆可追溯" /><Metric icon={FileCheck2} value="100%" label="專案資料完整度" delta="可公開募資" /></div>
+      <Panel className="span-12 subpage-primary" title="小農改善專案計畫" note="說明田間問題、預期成果與綠點用途，公開向消費者募集改善資源" action={<button className="button button-primary" onClick={onCreate}><HeartHandshake />建立改善專案</button>}>
+        <div className="farmer-project-grid">
+          {projectStats.map(({ project, target, raised, supporters }) => (
+            <article className="farmer-project-card" key={project.id}>
+              <header><span>{project.id.startsWith("farmer-project-") ? "剛建立・公開募集中" : "公開募集中"}</span><h3>{project.title.split("｜").at(-1)}</h3><p>{project.note}</p></header>
+              <div className="farmer-project-progress"><div><span>已募集</span><strong>{raised.toLocaleString()} <small>／ {target.toLocaleString()} 點</small></strong></div><b>{project.progress}%</b></div>
+              <div className="progress"><span style={{ width: `${project.progress}%` }} /></div>
+              <div className="farmer-project-facts"><span><small>每次支持</small><b>{project.points.toLocaleString()} 點</b></span><span><small>支持人數</small><b>{supporters} 人</b></span><span><small>預期成果</small><b>{project.impact}</b></span></div>
+              <div className="farmer-project-allocation"><small>綠點如何支持產地</small><p>{(project.allocations ?? [{ label: "設備與材料", percent: 55 }, { label: "施工與改善", percent: 30 }, { label: "成果追蹤", percent: 15 }]).map((item) => `${item.label} ${item.percent}%`).join("・")}</p></div>
+              <button className="button button-secondary button-block" onClick={() => onPreview(project.id)}>預覽消費者募資頁<ArrowRight /></button>
+            </article>
+          ))}
         </div>
+      </Panel>
+      <Panel className="span-12" title="公開前檢查" note="資料越完整，越容易讓消費者理解支持目的">
+        <div className="project-publish-checks"><Evidence title="田間問題與改善方式" note="清楚說明現在遇到的問題" done /><Evidence title="綠點使用比例" note="揭露設備、執行與成果追蹤用途" done /><Evidence title="預期成果與完成時間" note="讓支持者可以追蹤後續進度" done /><Evidence title="產銷履歷或無農藥資料" note="建立可信的專案基礎" done /></div>
       </Panel>
     </div>
   );
@@ -1507,91 +1826,42 @@ function LocalSupportDashboard({
 
 function FarmerDashboard({
   score,
+  farmerPoints,
   evidence,
   dimensions,
   onEvidence,
-  onOffer,
+  onProducts,
+  onProjects,
+  onBenefits,
 }: {
   score: number;
+  farmerPoints: number;
   evidence: boolean;
   dimensions: { name: string; score: number }[];
   onEvidence: () => void;
-  onOffer: (id: string) => void;
+  onProducts: () => void;
+  onProjects: () => void;
+  onBenefits: () => void;
 }) {
-  const unlockedOffers = fundingOffers.filter((offer) => score >= offer.requiredScore);
-  const nextOffer = fundingOffers.find((offer) => score < offer.requiredScore);
-  const nextGap = nextOffer ? nextOffer.requiredScore - score : 0;
+  const availableBenefits = farmerBenefits.filter((benefit) => farmerPoints >= benefit.requiredScore);
   return (
     <>
       <div className="metrics">
-        <Metric icon={HeartHandshake} value="680 點" label="本月取得支持" delta="+18%" />
-        <Metric icon={ShoppingBasket} value="46 箱" label="商品兌換數" delta="+12%" />
-        <Metric icon={FileCheck2} value={evidence ? "100%" : "86%"} label="永續資料完整度" delta={evidence ? "完成" : "待補 1 項"} />
-        <Metric icon={Banknote} value={`${unlockedOffers.length} 項`} label="已解鎖資金方案" delta={`${fundingOffers.length - unlockedOffers.length} 項待解鎖`} />
+        <Metric icon={HandCoins} value={`${farmerPoints.toLocaleString()} 點`} label="小農綠點餘額" delta="可於農會運用" />
+        <Metric icon={ShoppingBasket} value="3 款" label="已上架商品" delta="12 箱待出貨" />
+        <Metric icon={FileCheck2} value={evidence ? "100%" : "92%"} label="履歷與檢測完整度" delta={evidence ? "完成" : "待補 1 項"} />
+        <Metric icon={PackageCheck} value={`${availableBenefits.length} 項`} label="可兌換農業資源" delta="依綠點餘額" />
       </div>
       <div className="dashboard-grid">
-        <Panel className="span-7" title="綠色信用評分" note="依永續行動、資料完整度與成果紀錄綜合評估">
-          <div className="score-panel">
-            <div className="score-ring" style={{ "--score": `${score}%` } as React.CSSProperties}><span><strong>{score}</strong><small>滿分 100</small></span></div>
-            <div>
-              <h3>{evidence ? "信用提升完成" : "穩健成長中"}</h3>
-              <p>{evidence ? "低碳作業證明已完成驗證，綠色信用提升 4 分，媒合條件同步更新。" : "補充低碳設備使用紀錄，預估可提升 4 分並更接近進階資金方案。"}</p>
-              <button className="button button-primary" onClick={onEvidence}><Upload />{evidence ? "查看補件結果" : "補充永續證明"}</button>
-            </div>
-          </div>
+        <Panel className="span-7" title="商品與消費者支持" note="附近消費者可透過綠點兌換，支持直接累積到小農帳戶">
+          <div className="score-panel"><div className="score-ring" style={{ "--score": "78%" } as React.CSSProperties}><span><strong>46</strong><small>本月訂單</small></span></div><div><h3>附近曝光持續增加</h3><p>商品綁定產銷履歷與無農藥檢測後，會優先顯示可信標章與配送距離。</p><div className="farmer-dashboard-actions"><button className="button button-primary" onClick={onProjects}><HeartHandshake />管理改善專案</button><button className="button button-secondary" onClick={onProducts}><ShoppingBasket />商品管理</button></div></div></div>
         </Panel>
-        <Panel className="span-5" title="評估維度" note="五項綠色生產指標">
-          <Chart>
-            <BarChart layout="vertical" data={dimensions}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" domain={[0, 100]} hide />
-              <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} width={70} />
-              <Tooltip />
-              <Bar dataKey="score" name="分數" fill="#74a945" radius={[0, 8, 8, 0]} />
-            </BarChart>
-          </Chart>
+        <Panel className="span-5" title="永續資料" note="用可追溯證明建立消費信任">
+          <div className="evidence-list"><Evidence title="產銷履歷與批次資訊" note="2026/07/22 更新" done /><Evidence title="無農藥檢測報告" note="2026/07/18 更新" done /><Evidence title="友善耕作紀錄" note="本季紀錄完整" done /><Evidence title="低碳設備使用證明" note={evidence ? "已完成驗證" : "待補充"} done={evidence} /></div>
+          <button className="button button-secondary button-block" onClick={onEvidence}><Upload />管理永續證明</button>
         </Panel>
-        <Panel className="span-7" title="永續資料進度" note="完整且可追溯的資料，是綠色信用的基礎">
-          <div className="evidence-list">
-            <Evidence title="友善耕作紀錄" note="最近更新：2026/07/18" done />
-            <Evidence title="循環回收與資材管理" note="最近更新：2026/07/10" done />
-            <Evidence title="低碳設備使用證明" note={evidence ? "已完成 Demo 驗證" : "待補充設備與使用紀錄"} done={evidence} />
-            <Evidence title="農產履歷與批次資訊" note="最近更新：2026/07/22" done />
-          </div>
-        </Panel>
-        <Panel className="span-12" title="信用解鎖資金方案" note="累積綠色信用，逐步解鎖更高額度、配對資金與優惠條件">
-          <div className="funding-unlock-summary">
-            <div className="funding-current"><span><BadgeCheck /></span><div><small>目前綠色信用</small><strong>{score} 分</strong><p>已解鎖 {unlockedOffers.length}／{fundingOffers.length} 項方案</p></div></div>
-            {nextOffer ? (
-              <div className="funding-next">
-                <div><span>下一個解鎖目標</span><b>{nextOffer.requiredScore} 分・{nextOffer.name}</b></div>
-                <div className="progress"><span style={{ width: `${Math.min((score / nextOffer.requiredScore) * 100, 100)}%` }} /></div>
-                <small>再累積 <b>{nextGap} 分</b>，即可解鎖 {nextOffer.amount}</small>
-              </div>
-            ) : (
-              <div className="funding-next complete"><b>所有示範方案皆已解鎖</b><small>持續更新成果，可爭取更適合的正式條件。</small></div>
-            )}
-            <button className="button button-primary" onClick={onEvidence}><Upload />{evidence ? "查看信用提升紀錄" : "補資料、加速解鎖"}</button>
-          </div>
-          <div className="funding-legend"><span><i className="support" />資金支持／成果核銷</span><span><i className="loan" />優惠融資／分期運用</span><span><LockKeyhole />金色虛線為待解鎖</span></div>
-          <div className="offer-list funding-offer-grid">
-            {fundingOffers.map((offer) => (
-              <Offer
-                key={offer.id}
-                category={offer.category}
-                name={offer.name}
-                amount={offer.amount}
-                term={offer.term}
-                rate={offer.rate}
-                description={offer.description}
-                purpose={offer.purpose}
-                requiredScore={offer.requiredScore}
-                currentScore={score}
-                recommended={"recommended" in offer && offer.recommended}
-                onClick={() => onOffer(offer.id)}
-              />
-            ))}
-          </div>
+        <Panel className="span-12" title="農會農業資源兌換" note="把消費者支持轉成土壤檢測、農具、輔導與補助資源" action={<button className="button button-primary" onClick={onBenefits}>查看全部資源<ArrowRight /></button>}>
+          <div className="funding-unlock-summary"><div className="funding-current"><span><HandCoins /></span><div><small>目前可用</small><strong>{farmerPoints.toLocaleString()} 點</strong><p>可兌換 {availableBenefits.length}／{farmerBenefits.length} 項資源</p></div></div><div className="funding-next complete"><b>綠點來源透明</b><small>消費者兌換、直接支持與企業配對均可追溯。</small></div></div>
         </Panel>
       </div>
     </>
@@ -1610,63 +1880,30 @@ function InstitutionDashboard({
   onDownload: () => void;
 }) {
   const multiplier = region === "全部地區" ? 1 : region === "雲林" ? 0.34 : 0.22;
-  const regionData = [
-    { name: "雲林", value: 34, color: "#2d7250" },
-    { name: "嘉義", value: 27, color: "#74a945" },
-    { name: "花蓮", value: 22, color: "#d8a72f" },
-    { name: "其他", value: 17, color: "#c7d4bd" },
+  const sourceData = [
+    { name: "綠色消費", value: 38, color: "#2d7250" },
+    { name: "低碳交通", value: 27, color: "#74a945" },
+    { name: "電子帳單", value: 18, color: "#d8a72f" },
+    { name: "政府企業方案", value: 17, color: "#c7d4bd" },
   ];
   const visibleFarmers = farmers.filter((item) => region === "全部地區" || item.area === region);
   return (
     <>
       <div className="metrics">
-        <Metric icon={Users} value={`${Math.round(128 * multiplier)}`} label="支持農戶" delta="+9.4%" />
-        <Metric icon={HandCoins} value={`${Math.round(386 * multiplier)} 萬`} label="媒合金融資源" delta="+18.2%" />
+        <Metric icon={HandCoins} value={`${Math.round(478 * multiplier).toLocaleString()} 千點`} label="發放與配對綠點" delta="+18.2%" />
+        <Metric icon={Users} value={`${Math.round(18620 * multiplier).toLocaleString()}`} label="參與人次" delta="+14.8%" />
+        <Metric icon={Sprout} value={`${Math.round(128 * multiplier)}`} label="受支持小農" delta="+9.4%" />
         <Metric icon={Trees} value={`${(62.4 * multiplier).toFixed(1)} 噸`} label="估算減碳成果" delta="+12.1%" />
-        <Metric icon={TrendingUp} value="84.6" label="平均綠色信用" delta="+2.8" />
       </div>
       <div className="dashboard-grid">
-        <Panel className="span-8" title="資金成長趨勢" note="媒合資金單位：萬元" action={
-          <select className="select" value={region} onChange={(event) => setRegion(event.target.value)}>
-            <option>全部地區</option><option>雲林</option><option>嘉義</option><option>花蓮</option>
-          </select>
-        }>
-          <Chart>
-            <BarChart data={fundTrend.map((item) => ({ ...item, funds: Math.round(item.funds * multiplier) }))}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="month" axisLine={false} tickLine={false} />
-              <YAxis axisLine={false} tickLine={false} />
-              <Tooltip />
-              <Bar dataKey="funds" name="媒合資金" fill="#2d7250" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </Chart>
+        <Panel className="span-8" title="綠點激勵投入趨勢" note="消費、交通、電子帳單與企業配對，單位：千點" action={<select className="select" value={region} onChange={(event) => setRegion(event.target.value)}><option>全部地區</option><option>雲林</option><option>嘉義</option><option>花蓮</option></select>}>
+          <Chart><BarChart data={supportTrend.map((item) => ({ ...item, funds: Math.round(item.funds * multiplier) }))}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="month" axisLine={false} tickLine={false} /><YAxis axisLine={false} tickLine={false} /><Tooltip /><Bar dataKey="funds" name="發放綠點" fill="#2d7250" radius={[8, 8, 0, 0]} /></BarChart></Chart>
         </Panel>
-        <Panel className="span-4" title="農戶地區分布" note="目前合作農戶占比">
-          <Chart>
-            <PieChart>
-              <Pie data={regionData} dataKey="value" nameKey="name" innerRadius={58} outerRadius={88} paddingAngle={4}>
-                {regionData.map((item) => <Cell key={item.name} fill={item.color} />)}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </Chart>
+        <Panel className="span-4" title="綠點來源" note="目前各類激勵行動占比">
+          <Chart><PieChart><Pie data={sourceData} dataKey="value" nameKey="name" innerRadius={58} outerRadius={88} paddingAngle={4}>{sourceData.map((item) => <Cell key={item.name} fill={item.color} />)}</Pie><Tooltip /></PieChart></Chart>
         </Panel>
-        <Panel className="span-12" title="農戶信用與媒合進度" note={`目前顯示 ${visibleFarmers.length} 戶；點選可開啟完整農戶組合`} action={
-          <div className="panel-actions"><button className="button button-secondary" onClick={() => onDetail()}><Users />開啟農戶組合</button><button className="button button-secondary" onClick={onDownload}><Download />下載影響力摘要</button></div>
-        }>
-          <div className="table-wrap">
-            <table>
-              <thead><tr><th>農戶</th><th>地區</th><th>作物</th><th>綠色信用</th><th>申請資金</th><th>媒合狀態</th><th>查看</th></tr></thead>
-              <tbody>
-                {visibleFarmers.map((item) => (
-                  <tr key={item.name} onClick={() => onDetail(item.name)} tabIndex={0} onKeyDown={(event) => event.key === "Enter" && onDetail(item.name)}>
-                    <td><b>{item.name}</b></td><td>{item.area}</td><td>{item.crop}</td>
-                    <td><span className="score-pill">{item.score}</span></td><td>{item.amount}</td><td><span className={`status-pill ${item.status === "待補件" ? "waiting" : ""}`}>{item.status}</span></td><td><ChevronRight /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <Panel className="span-12" title="在地小農支持成效" note={`目前顯示 ${visibleFarmers.length} 戶；用於 ESG 成果揭露與地方共好追蹤`} action={<div className="panel-actions"><button className="button button-secondary" onClick={() => onDetail()}><PackageCheck />管理激勵計畫</button><button className="button button-secondary" onClick={onDownload}><Download />查看成果報告</button></div>}>
+          <div className="table-wrap"><table><thead><tr><th>農戶</th><th>地區</th><th>作物</th><th>履歷完整度</th><th>累積綠點支持</th><th>地方效益</th></tr></thead><tbody>{visibleFarmers.map((item) => <tr key={item.name}><td><b>{item.name}</b></td><td>{item.area}</td><td>{item.crop}</td><td><span className="score-pill">{item.completeness}%</span></td><td>{item.amount}</td><td>{item.purpose}</td></tr>)}</tbody></table></div>
         </Panel>
       </div>
     </>
@@ -1809,10 +2046,10 @@ function ImpactReceiptDetail({ item }: { item: LocalProject }) {
         <section>
           <h4>{isRedeem ? "兌換如何支持產地" : "資源如何被使用"}</h4>
           {(isRedeem
-            ? [["小農商品收入", "60%"], ["產地理貨與冷藏", "25%"], ["循環包裝與配送", "15%"]]
-            : [["設備與材料", "55%"], ["施工與改善", "30%"], ["成果追蹤", "15%"]]
-          ).map(([label, value]) => (
-            <div className="allocation" key={label}><span><b>{label}</b><em>{value}</em></span><div className="progress"><i style={{ width: value }} /></div></div>
+            ? [{ label: "小農商品收入", percent: 60 }, { label: "產地理貨與冷藏", percent: 25 }, { label: "循環包裝與配送", percent: 15 }]
+            : item.allocations ?? [{ label: "設備與材料", percent: 55 }, { label: "施工與改善", percent: 30 }, { label: "成果追蹤", percent: 15 }]
+          ).map(({ label, percent }) => (
+            <div className="allocation" key={label}><span><b>{label}</b><em>{percent}%</em></span><div className="progress"><i style={{ width: `${percent}%` }} /></div></div>
           ))}
         </section>
         <section>
@@ -1820,7 +2057,7 @@ function ImpactReceiptDetail({ item }: { item: LocalProject }) {
           <div className="receipt-timeline">
             <div className="done"><span><Check /></span><p><b>{isRedeem ? "商品兌換完成" : "綠點支持完成"}</b><small>2026/07/31</small></p></div>
             <div className="active"><span>2</span><p><b>{isRedeem ? "小農備貨與產地配送" : "採購與改善進行中"}</b><small>{isRedeem ? "可至兌換訂單查看最新進度" : "預計 2026/08 完成"}</small></p></div>
-            <div><span>3</span><p><b>{isRedeem ? "地方成果持續累積" : "成果驗證與回報"}</b><small>{isRedeem ? "訂單收入支持下一批友善生產" : "完成後更新綠色信用"}</small></p></div>
+            <div><span>3</span><p><b>{isRedeem ? "地方成果持續累積" : "成果驗證與回報"}</b><small>{isRedeem ? "訂單收入支持下一批友善生產" : "完成後更新成果透明度"}</small></p></div>
           </div>
         </section>
       </div>
@@ -1977,110 +2214,65 @@ function FarmerEvidencePage({
 }) {
   return (
     <div className="dashboard-grid">
-      <Panel className="span-7 subpage-primary" title="永續資料進度" note="完整且可追溯的資料，是綠色信用的基礎">
-        <div className="evidence-list"><Evidence title="友善耕作紀錄" note="最近更新：2026/07/18" done /><Evidence title="循環回收與資材管理" note="最近更新：2026/07/10" done /><Evidence title="低碳設備使用證明" note={evidence ? "已完成 Demo 驗證" : "待補充設備與使用紀錄"} done={evidence} /><Evidence title="農產履歷與批次資訊" note="最近更新：2026/07/22" done /></div>
+      <Panel className="span-7 subpage-primary" title="永續證明與農產履歷" note="資料將同步顯示於商品頁，幫助消費者判斷來源與耕作方式">
+        <div className="evidence-list"><Evidence title="產銷履歷與批次資訊" note="履歷編號 TAP-26-0718" done /><Evidence title="無農藥殘留檢測" note="2026/07/18 檢測合格" done /><Evidence title="友善耕作紀錄" note="施作、用水與資材紀錄完整" done /><Evidence title="低碳設備使用證明" note={evidence ? "已完成 Demo 驗證" : "待補充節水設備使用紀錄"} done={evidence} /></div>
       </Panel>
-      <Panel className="span-5" title={evidence ? "資料驗證完成" : "補充低碳作業證明"} note={evidence ? "綠色信用已同步更新" : "上傳範例文件即可完成 Demo"}>
-        {evidence ? <Success title="信用提升至 86 分" text="低碳設備使用證明已完成驗證，可查看新的資金解鎖狀態。"><button className="button button-primary" onClick={onFunding}>查看信用解鎖方案</button></Success> : <><div className="upload-box"><Upload /><b>低碳設備使用紀錄.pdf</b><small>Demo 已準備範例文件</small></div><div className="receipt-box"><Row label="設備" value="節水灌溉控制器" /><Row label="使用期間" value="2026/04–2026/07" /><Row label="預估分數" value="82 → 86" /></div><button className="button button-primary button-block" onClick={onSubmit}>模擬送出並驗證</button></>}
+      <Panel className="span-5" title={evidence ? "可信資料已更新" : "補充低碳作業證明"} note={evidence ? "商品標章與資料完整度已同步" : "上傳範例文件即可完成 Demo"}>
+        {evidence ? <Success title="履歷完整度提升至 100%" text="消費者可在商品與支持頁看見最新證明。"><button className="button button-primary" onClick={onFunding}>前往農業資源兌換</button></Success> : <><div className="upload-box"><Upload /><b>節水設備使用紀錄.pdf</b><small>Demo 已準備範例文件</small></div><div className="receipt-box"><Row label="設備" value="節水灌溉控制器" /><Row label="使用期間" value="2026/04–2026/07" /><Row label="資料完整度" value="92 → 100" /></div><button className="button button-primary button-block" onClick={onSubmit}>模擬送出並驗證</button></>}
       </Panel>
     </div>
   );
 }
 
 function FarmerFundingPage({
-  score,
-  evidence,
-  onEvidence,
+  farmerPoints,
   onOffer,
 }: {
-  score: number;
-  evidence: boolean;
-  onEvidence: () => void;
+  farmerPoints: number;
   onOffer: (id: string) => void;
 }) {
-  const unlockedOffers = fundingOffers.filter((offer) => score >= offer.requiredScore);
-  const nextOffer = fundingOffers.find((offer) => score < offer.requiredScore);
-  const nextGap = nextOffer ? nextOffer.requiredScore - score : 0;
+  const availableBenefits = farmerBenefits.filter((benefit) => farmerPoints >= benefit.requiredScore);
+  const nextBenefit = farmerBenefits.find((benefit) => farmerPoints < benefit.requiredScore);
   return (
-    <div className="dashboard-grid"><Panel className="span-12 subpage-primary" title="依綠色信用解鎖適合方案" note="方案門檻、額度、用途與申請流程皆可完整體驗">
-      <div className="funding-unlock-summary"><div className="funding-current"><span><BadgeCheck /></span><div><small>目前綠色信用</small><strong>{score} 分</strong><p>已解鎖 {unlockedOffers.length}／{fundingOffers.length} 項方案</p></div></div>{nextOffer ? <div className="funding-next"><div><span>下一個解鎖目標</span><b>{nextOffer.requiredScore} 分・{nextOffer.name}</b></div><div className="progress"><span style={{ width: Math.min((score / nextOffer.requiredScore) * 100, 100) + "%" }} /></div><small>再累積 <b>{nextGap} 分</b>，即可解鎖 {nextOffer.amount}</small></div> : <div className="funding-next complete"><b>所有示範方案皆已解鎖</b></div>}<button className="button button-primary" onClick={onEvidence}><Upload />{evidence ? "查看信用提升紀錄" : "補資料、加速解鎖"}</button></div>
-      <div className="funding-legend"><span><i className="support" />資金支持／成果核銷</span><span><i className="loan" />優惠融資／分期運用</span><span><LockKeyhole />金色虛線為待解鎖</span></div>
-      <div className="offer-list funding-offer-grid">{fundingOffers.map((offer) => <Offer key={offer.id} category={offer.category} name={offer.name} amount={offer.amount} term={offer.term} rate={offer.rate} description={offer.description} purpose={offer.purpose} requiredScore={offer.requiredScore} currentScore={score} recommended={"recommended" in offer && offer.recommended} onClick={() => onOffer(offer.id)} />)}</div>
+    <div className="dashboard-grid"><Panel className="span-12 subpage-primary" title="農會農業資源兌換" note="把消費者與企業支持轉成檢測、農具、輔導和農業補助">
+      <div className="funding-unlock-summary"><div className="funding-current"><span><HandCoins /></span><div><small>小農綠點餘額</small><strong>{farmerPoints.toLocaleString()} 點</strong><p>目前可兌換 {availableBenefits.length}／{farmerBenefits.length} 項</p></div></div>{nextBenefit ? <div className="funding-next"><div><span>下一項資源</span><b>{nextBenefit.requiredScore.toLocaleString()} 點・{nextBenefit.name}</b></div><div className="progress"><span style={{ width: Math.min((farmerPoints / nextBenefit.requiredScore) * 100, 100) + "%" }} /></div><small>再獲得 <b>{(nextBenefit.requiredScore - farmerPoints).toLocaleString()} 點</b>即可兌換</small></div> : <div className="funding-next complete"><b>目前所有示範資源皆可兌換</b><small>兌換後由農會協助領取或銜接輔導。</small></div>}</div>
+      <div className="funding-legend"><span><i className="support" />農會合作資源</span><span><i className="loan" />器具／檢測／輔導</span><span><LockKeyhole />餘額不足時顯示差額</span></div>
+      <div className="offer-list funding-offer-grid">{farmerBenefits.map((offer) => <Offer key={offer.id} category={offer.category} name={offer.name} amount={offer.amount} term={offer.term} rate={offer.rate} description={offer.description} purpose={offer.purpose} requiredScore={offer.requiredScore} currentScore={farmerPoints} recommended={"recommended" in offer && offer.recommended} onClick={() => onOffer(offer.id)} />)}</div>
     </Panel></div>
   );
 }
 
-type PortfolioView = "overview" | "sustainability" | "assessment";
+const incentivePrograms: IncentiveProgram[] = [
+  { id: "commute", name: "低碳通勤綠點", sponsor: "企業員工方案", action: "搭乘大眾運輸或共享單車", reward: "每次 20 點", budgetPoints: 96400, participants: "4,820 人", progress: 78, esg: "氣候行動" },
+  { id: "ebill", name: "電子帳單轉換獎勵", sponsor: "政府／公用事業", action: "改用電子帳單", reward: "一次 80 點", budgetPoints: 74800, participants: "9,350 人", progress: 64, esg: "責任消費" },
+  { id: "appliance", name: "節能家電汰舊換新", sponsor: "政府／銀行／家電通路", action: "購買一級能效冷氣、冰箱或除濕機", reward: "每件 600 點", budgetPoints: 92000, participants: "1,540 戶", progress: 69, esg: "能源效率" },
+  { id: "local-shopping", name: "在地綠色消費加碼", sponsor: "銀行卡友／企業會員", action: "指定在地小農通路消費", reward: "消費 5% 點數", budgetPoints: 128600, participants: "6,240 人", progress: 83, esg: "地方共好" },
+  { id: "farmer-match", name: "偏鄉小農支持配對", sponsor: "企業 ESG 專案", action: "企業 1：1 配對消費者綠點", reward: "等額配對", budgetPoints: 86200, participants: "128 戶", progress: 71, esg: "永續經濟" },
+];
 
-function InstitutionPortfolioPage({
-  selectedName,
-  setSelectedName,
-}: {
-  selectedName: string;
-  setSelectedName: (name: string) => void;
-}) {
-  const selected = farmers.find((item) => item.name === selectedName) || farmers[0];
-  const [view, setView] = useState<PortfolioView>("overview");
-  const [assessmentStep, setAssessmentStep] = useState(0);
-
-  useEffect(() => {
-    setView("overview");
-    setAssessmentStep(0);
-  }, [selectedName]);
-
-  function openAssessment() {
-    setAssessmentStep(0);
-    setView("assessment");
-  }
-
+function InstitutionPortfolioPage({ programs, onCreate }: { programs: IncentiveProgram[]; onCreate: () => void }) {
+  const totalBudget = programs.reduce((sum, program) => sum + program.budgetPoints, 0);
   return (
-    <div className="dashboard-grid"><Panel className="span-12 subpage-primary" title="農戶信用與資金媒合" note="從左側選擇農戶，查看完整評估資料">
-      <div className="portfolio-summary"><article><strong>4 戶</strong><span>示範農戶</span></article><article><strong>276 萬</strong><span>申請資金</span></article><article><strong>85.0</strong><span>平均綠色信用</span></article><article><strong>75%</strong><span>可進入媒合</span></article></div>
-      <div className="portfolio-layout">
-        <div className="portfolio-list">{farmers.map((item) => <button className={item.name === selected.name ? "active" : ""} onClick={() => setSelectedName(item.name)} key={item.name}><span className="portfolio-avatar"><Sprout /></span><span><b>{item.name}</b><small>{item.area}・{item.crop}・{item.purpose}</small></span><em>{item.score}</em></button>)}</div>
-        <section className="portfolio-detail">
-          <header><div><small>目前查看</small><h3>{selected.name}</h3><p>{selected.area}地區・{selected.crop}農戶</p></div><span className={"status-pill " + (selected.status === "待補件" ? "waiting" : "")}>{selected.status}</span></header>
-          <div className="portfolio-credit"><div className="mini-score">{selected.score}<small>綠色信用</small></div><div><b>資料完整度 {selected.completeness}%</b><div className="progress"><span style={{ width: selected.completeness + "%" }} /></div><small>{selected.completeness < 80 ? "需補充設備估價與減碳資料" : "資料足以進入資金評估"}</small></div></div>
-          <div className="receipt-box"><Row label="申請資金" value={selected.amount} /><Row label="主要用途" value={selected.purpose} /><Row label="本月綠點支持" value={selected.name === "禾日友善農園" ? "12,680 點" : "8,240 點"} /><Row label="預估環境效益" value={selected.crop === "稻米" ? "減碳 8.6 噸／年" : "資源效率提升 15%"} /></div>
-          <div className="portfolio-actions"><button className="button button-secondary" onClick={() => setView("sustainability")}><Leaf />查看永續資料</button><button className="button button-primary" onClick={openAssessment}><FileCheck2 />進入模擬評估</button></div>
-        </section>
-      </div>
-
-      {view === "sustainability" && (
-        <section className="portfolio-workspace">
-          <header><div><small>{selected.name}</small><h3>永續資料與驗證紀錄</h3><p>金融機構可檢視資料來源、更新時間與驗證狀態。</p></div><button className="button button-secondary" onClick={() => setView("overview")}>收起資料</button></header>
-          <div className="sustainability-metrics"><article><span><Trees /></span><div><small>環境改善</small><strong>{selected.crop === "稻米" ? "減碳 8.6 噸" : "效率 +15%"}</strong></div></article><article><span><FileCheck2 /></span><div><small>資料完整度</small><strong>{selected.completeness}%</strong></div></article><article><span><BadgeCheck /></span><div><small>綠色信用</small><strong>{selected.score} 分</strong></div></article></div>
-          <div className="sustainability-records">
-            <div><span className="done"><Check /></span><p><b>友善耕作與生產紀錄</b><small>2026/07/22 更新・產銷履歷資料</small></p><em>已驗證</em></div>
-            <div><span className="done"><Check /></span><p><b>水資源與能源使用資料</b><small>2026/07/18 更新・設備自動紀錄</small></p><em>已驗證</em></div>
-            <div><span className={selected.completeness < 80 ? "waiting" : "done"}>{selected.completeness < 80 ? <Upload /> : <Check />}</span><p><b>設備改善與估價資料</b><small>{selected.completeness < 80 ? "尚缺設備估價單與預估效益" : "2026/07/12 更新・文件完整"}</small></p><em>{selected.completeness < 80 ? "待補件" : "已驗證"}</em></div>
-            <div><span className="done"><Check /></span><p><b>地方供應與綠點支持紀錄</b><small>2026/07/31 更新・平台交易資料</small></p><em>已驗證</em></div>
-          </div>
-        </section>
-      )}
-
-      {view === "assessment" && (
-        <section className="portfolio-workspace assessment-workspace">
-          <header><div><small>{selected.name}</small><h3>模擬融資評估</h3><p>依綠色信用、資料完整度與申請用途產生 Demo 建議。</p></div><button className="button button-secondary" onClick={() => setView("overview")}>離開評估</button></header>
-          <div className="assessment-stepper">{["資料檢核", "風險評估", "建議結果"].map((label, index) => <div className={index <= assessmentStep ? "active" : ""} key={label}><span>{index < assessmentStep ? <Check /> : index + 1}</span><b>{label}</b></div>)}</div>
-          {assessmentStep === 0 && <div className="assessment-checks"><div><CheckCircle2 /><p><b>農戶基本與營運資料</b><small>農場、作物與近一期產銷資料已帶入</small></p><em>完成</em></div><div><CheckCircle2 /><p><b>綠色信用資料</b><small>{selected.score} 分・最近更新 2026/07/31</small></p><em>完成</em></div><div><CheckCircle2 /><p><b>資金用途與需求</b><small>{selected.purpose}・申請 {selected.amount}</small></p><em>完成</em></div><div className={selected.completeness < 80 ? "warning" : ""}>{selected.completeness < 80 ? <Upload /> : <CheckCircle2 />}<p><b>佐證文件</b><small>資料完整度 {selected.completeness}%</small></p><em>{selected.completeness < 80 ? "需補件" : "完成"}</em></div></div>}
-          {assessmentStep === 1 && <div className="assessment-factors"><article><small>綠色信用</small><strong>{selected.score}<em>／100</em></strong><div className="progress"><span style={{ width: selected.score + "%" }} /></div><p>{selected.score >= 85 ? "永續紀錄穩定，優於示範門檻" : "達基本門檻，仍可持續提升"}</p></article><article><small>資料可信度</small><strong>{selected.completeness}<em>％</em></strong><div className="progress"><span style={{ width: selected.completeness + "%" }} /></div><p>{selected.completeness >= 90 ? "資料來源完整且可追溯" : "需補充部分佐證文件"}</p></article><article><small>用途適配度</small><strong>{selected.status === "待補件" ? "中" : "高"}</strong><div className="progress"><span style={{ width: selected.status === "待補件" ? "68%" : "92%" }} /></div><p>{selected.purpose}符合綠色農業改善方向</p></article></div>}
-          {assessmentStep === 2 && <div className={"assessment-result " + (selected.completeness < 80 ? "conditional" : "approved")}><span>{selected.completeness < 80 ? <Upload /> : <BadgeCheck />}</span><div><small>Demo 評估建議</small><h3>{selected.completeness < 80 ? "補件後進入資金媒合" : "建議進入下一階段評估"}</h3><p>{selected.completeness < 80 ? "補上設備估價與環境效益試算後，可重新產生評估結果。" : `綠色信用 ${selected.score} 分、資料完整度 ${selected.completeness}%，建議依 ${selected.amount} 需求進行合作機構審查。`}</p><div><span>建議額度<b>{selected.amount}</b></span><span>主要用途<b>{selected.purpose}</b></span><span>追蹤條件<b>每季更新成果</b></span></div></div></div>}
-          <div className="assessment-actions"><button className="button button-secondary" onClick={() => assessmentStep === 0 ? setView("overview") : setAssessmentStep(assessmentStep - 1)}>{assessmentStep === 0 ? "取消評估" : "上一步"}</button><button className="button button-primary" onClick={() => assessmentStep === 2 ? setView("overview") : setAssessmentStep(assessmentStep + 1)}>{assessmentStep === 2 ? "完成評估" : assessmentStep === 0 ? "開始風險評估" : "產生建議結果"}</button></div>
-        </section>
-      )}
-    </Panel></div>
+    <div className="dashboard-grid">
+      <Panel className="span-12 subpage-primary" title="綠點激勵計畫" note="由銀行、政府與企業設計任務，將綠色行動轉成可追溯的在地支持" action={<button className="button button-primary" onClick={onCreate}><PackageCheck />建立新計畫</button>}>
+        <div className="portfolio-summary"><article><strong>{programs.length} 項</strong><span>計畫總數</span></article><article><strong>{totalBudget.toLocaleString()} 點</strong><span>計畫綠點預算</span></article><article><strong>20,160</strong><span>既有參與人次</span></article><article><strong>128 戶</strong><span>受支持小農</span></article></div>
+        <div className="incentive-grid">{programs.map((program) => <article className="incentive-card" key={program.id}><header><span>{program.esg}</span><b>{program.name}</b><small>{program.sponsor}</small></header><p>{program.action}</p><div className="incentive-data"><span>回饋方式<b>{program.reward}</b></span><span>計畫預算<b>{program.budgetPoints.toLocaleString()} 點</b></span><span>參與對象<b>{program.participants}</b></span></div><div className="progress"><span style={{ width: `${program.progress}%` }} /></div><small>{program.progress === 0 ? "新建立・尚未開始" : `年度目標達成 ${program.progress}%`}</small></article>)}</div>
+      </Panel>
+      <Panel className="span-12" title="ESG 可揭露成果" note="平台協助累積行動、點數流向與地方效益證據；正式評等仍依各揭露準則與評鑑機構認定">
+        <div className="table-wrap"><table><thead><tr><th>成果面向</th><th>可揭露指標</th><th>目前成果</th><th>佐證方式</th></tr></thead><tbody><tr><td>氣候行動</td><td>低碳交通參與及估算減碳</td><td>62.4 噸 CO₂e</td><td>行動紀錄與估算方法</td></tr><tr><td>責任消費</td><td>綠色消費及電子帳單轉換</td><td>15,590 人次</td><td>點數發放紀錄</td></tr><tr><td>地方共好</td><td>在地小農支持與訂單</td><td>128 戶</td><td>影響力收據與產銷履歷</td></tr><tr><td>永續經濟</td><td>農業資源回流</td><td>86,200 點</td><td>農會兌換紀錄</td></tr></tbody></table></div>
+      </Panel>
+    </div>
   );
 }
 
 function InstitutionReportPage({ onDownload }: { onDownload: () => void }) {
   return (
     <>
-      <div className="metrics"><Metric icon={Users} value="128 戶" label="受支持農戶" delta="+9.4%" /><Metric icon={HandCoins} value="386 萬" label="媒合金融資源" delta="+18.2%" /><Metric icon={Trees} value="62.4 噸" label="估算減碳成果" delta="+12.1%" /><Metric icon={TrendingUp} value="84.6" label="平均綠色信用" delta="+2.8" /></div>
+      <div className="metrics"><Metric icon={HandCoins} value="478,000 點" label="發放與配對綠點" delta="+18.2%" /><Metric icon={Users} value="20,160" label="綠色行動人次" delta="+14.8%" /><Metric icon={Sprout} value="128 戶" label="受支持小農" delta="+9.4%" /><Metric icon={Trees} value="62.4 噸" label="估算減碳成果" delta="+12.1%" /></div>
       <div className="dashboard-grid">
-        <Panel className="span-8 subpage-primary" title="影響力成長趨勢" note="近六個月媒合金融資源，單位：萬元"><Chart><BarChart data={fundTrend}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="month" axisLine={false} tickLine={false} /><YAxis axisLine={false} tickLine={false} /><Tooltip /><Bar dataKey="funds" name="媒合資金" fill="#2d7250" radius={[8, 8, 0, 0]} /></BarChart></Chart></Panel>
-        <Panel className="span-4" title="本期成果摘要" note="可供合作機構揭露與追蹤"><div className="report-highlights"><div><span><Trees /></span><p><b>環境成果</b><small>節水、減碳與友善棲地持續增加</small></p></div><div><span><Users /></span><p><b>地方成果</b><small>支持農戶與地方供應鏈穩定成長</small></p></div><div><span><Banknote /></span><p><b>金融成果</b><small>綠色信用協助資源精準投入</small></p></div></div></Panel>
-        <Panel className="span-12" title="報告涵蓋範圍" note="所有數據均為 Demo 模擬資料" action={<button className="button button-primary" onClick={onDownload}><Download />下載影響力摘要</button>}><div className="table-wrap"><table><thead><tr><th>指標</th><th>本期成果</th><th>資料來源</th><th>更新頻率</th></tr></thead><tbody><tr><td>受支持農戶</td><td>128 戶</td><td>綠點支持與農戶專案</td><td>每月</td></tr><tr><td>媒合金融資源</td><td>386 萬元</td><td>合作機構媒合紀錄</td><td>每月</td></tr><tr><td>估算減碳成果</td><td>62.4 噸</td><td>小農永續成果回報</td><td>每季</td></tr><tr><td>平均綠色信用</td><td>84.6 分</td><td>綠色信用評估系統</td><td>即時</td></tr></tbody></table></div></Panel>
+        <Panel className="span-8 subpage-primary" title="綠點激勵投入趨勢" note="近六個月消費、交通、電子帳單與配對投入，單位：千點"><Chart><BarChart data={supportTrend}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="month" axisLine={false} tickLine={false} /><YAxis axisLine={false} tickLine={false} /><Tooltip /><Bar dataKey="funds" name="發放綠點" fill="#2d7250" radius={[8, 8, 0, 0]} /></BarChart></Chart></Panel>
+        <Panel className="span-4" title="ESG 成果摘要" note="供銀行、政府與企業揭露及持續追蹤"><div className="report-highlights"><div><span><Trees /></span><p><b>環境面</b><small>節能家電、低碳交通、節水與減藥行動持續累積</small></p></div><div><span><Users /></span><p><b>社會面</b><small>在地小農收入、農業資源與地方供應鏈受益</small></p></div><div><span><PackageCheck /></span><p><b>治理面</b><small>點數來源、流向、履歷與成果保留可追溯紀錄</small></p></div></div></Panel>
+        <Panel className="span-12" title="可揭露成果範圍" note="平台提供績效證據；正式 ESG 評分仍依採用準則及評鑑機構認定" action={<button className="button button-primary" onClick={onDownload}><Download />下載正式版 PDF</button>}><div className="pdf-report-preview"><span>PDF</span><div><b>2026 年上半年綠色消費與在地小農影響力摘要</b><small>4 頁 A4 政策成果報告格式・含核心指標、趨勢圖、地區小農資料與 ESG 方法說明</small></div><em>GFES-DEMO-2026-H1-001</em></div><div className="table-wrap"><table><thead><tr><th>成果面向</th><th>本期成果</th><th>資料來源</th><th>更新頻率</th></tr></thead><tbody><tr><td>綠點激勵參與</td><td>20,160 人次</td><td>消費、節能家電、交通與電子帳單任務</td><td>每月</td></tr><tr><td>發放與配對綠點</td><td>478,000 點</td><td>平台點數流向紀錄</td><td>即時</td></tr><tr><td>受支持小農</td><td>128 戶</td><td>商品、支持與農會兌換紀錄</td><td>每月</td></tr><tr><td>估算減碳成果</td><td>62.4 噸 CO₂e</td><td>行動紀錄與公開估算方法</td><td>每季</td></tr></tbody></table></div></Panel>
       </div>
     </>
   );
@@ -2141,7 +2333,7 @@ function ActionModal({
         <img src={item.image} alt={item.title} />
         <div><small>{item.farmer}</small><h3>{item.title}</h3><p>{item.note}</p></div>
       </div>
-      <div className="receipt-box"><Row label={isSupport ? "支持綠點" : "兌換綠點"} value={`${item.points} 點`} /><Row label="目前可用" value={`${balance.toLocaleString()} 點`} /><Row label={isSupport ? "資源用途" : "配送方式"} value={item.purpose} /><Row label="預期成果" value={item.impact} /></div>
+      <div className="receipt-box"><Row label={isSupport ? "支持綠點" : "兌換綠點"} value={`${item.points} 點`} /><Row label="目前可用" value={`${balance.toLocaleString()} 點`} />{isSupport && item.targetPoints && <Row label="專案募資" value={`${(item.raisedPoints ?? 0).toLocaleString()}／${item.targetPoints.toLocaleString()} 點`} />}<Row label={isSupport ? "資源用途" : "配送方式"} value={item.purpose} /><Row label="預期成果" value={item.impact} /></div>
       {insufficient && <div className="points-insufficient"><span>綠點不足</span><b>還差 {(item.points - balance).toLocaleString()} 點</b><small>可先回傳綠色消費證明取得更多綠點。</small></div>}
       <div className="modal-actions"><button className="button button-secondary" onClick={onClose}>取消</button><button className="button button-primary" onClick={onConfirm} disabled={insufficient}>{done ? (isSupport ? "查看影響力收據" : "查看兌換狀態") : insufficient ? "綠點不足" : isSupport ? `確認支持 ${item.points} 點` : `確認兌換 ${item.points} 點`}</button></div>
     </ModalShell>
@@ -2220,36 +2412,13 @@ function Offer({
   const gap = Math.max(requiredScore - currentScore, 0);
   return (
     <article className={`offer ${locked ? "locked" : ""}`}>
-      <div className="offer-kicker">
-        <span className={category === "資金支持" ? "support" : "loan"}>{category}</span>
-        <span className={`offer-status ${locked ? "locked" : ""}`}>
-          {locked ? <LockKeyhole /> : <CheckCircle2 />}
-          {locked ? "待解鎖" : recommended ? "最適合你" : "已解鎖"}
-        </span>
-      </div>
-      <header className="offer-header"><b>{name}</b><small>{requiredScore} 分門檻</small></header>
+      <div className="offer-kicker"><span className="support">{category}</span><span className={`offer-status ${locked ? "locked" : ""}`}>{locked ? <LockKeyhole /> : <CheckCircle2 />}{locked ? "餘額不足" : recommended ? "推薦兌換" : "可兌換"}</span></div>
+      <header className="offer-header"><b>{name}</b><small>{requiredScore.toLocaleString()} 綠點</small></header>
       <p className="offer-description">{description}</p>
-      <div className="offer-data">
-        <small>可申請額度<b>{amount}</b></small>
-        <small>使用／方案期間<b>{term}</b></small>
-      </div>
+      <div className="offer-data"><small>兌換點數<b>{amount}</b></small><small>領取方式<b>{term}</b></small></div>
       <div className="offer-rate">{rate}</div>
-      {locked ? (
-        <>
-          <div className="locked-benefit"><LockKeyhole /><span><b>解鎖後可運用</b><small>{purpose}</small></span></div>
-          <div className="unlock-progress">
-            <div><span>目前 {currentScore} 分</span><b>目標 {requiredScore} 分</b></div>
-            <div className="progress"><span style={{ width: `${Math.min((currentScore / requiredScore) * 100, 100)}%` }} /></div>
-            <small>再提升 {gap} 分即可解鎖</small>
-          </div>
-        </>
-      ) : (
-        <div className="offer-threshold"><BadgeCheck />已達成綠色信用 {requiredScore} 分門檻</div>
-      )}
-      <button className={`button button-block ${locked ? "button-locked" : "button-secondary"}`} onClick={onClick}>
-        {locked ? <LockKeyhole /> : <ChevronRight />}
-        {locked ? "查看解鎖方法" : "模擬申請完整流程"}
-      </button>
+      {locked ? <><div className="locked-benefit"><LockKeyhole /><span><b>還差 {gap.toLocaleString()} 點</b><small>{purpose}</small></span></div><div className="unlock-progress"><div><span>目前 {currentScore.toLocaleString()} 點</span><b>需要 {requiredScore.toLocaleString()} 點</b></div><div className="progress"><span style={{ width: `${Math.min((currentScore / requiredScore) * 100, 100)}%` }} /></div></div></> : <div className="offer-threshold"><BadgeCheck />目前餘額足夠，由合作農會提供</div>}
+      <button className={`button button-block ${locked ? "button-locked" : "button-secondary"}`} onClick={onClick}>{locked ? <LockKeyhole /> : <ChevronRight />}{locked ? "查看所需點數" : "查看並兌換"}</button>
     </article>
   );
 }
@@ -2286,7 +2455,7 @@ function ReceiptModal({
   onClose,
 }: {
   supported: boolean;
-  item: (typeof localProjects)[number];
+  item: LocalProject;
   onDownload: () => void;
   onExplore: () => void;
   onClose: () => void;
@@ -2317,16 +2486,14 @@ function ReceiptModal({
         <div className="receipt-story-grid">
           <section>
             <h4>資源如何被使用</h4>
-            <div className="allocation"><span><b>設備與材料</b><em>55%</em></span><div className="progress"><i style={{ width: "55%" }} /></div></div>
-            <div className="allocation"><span><b>施工與改善</b><em>30%</em></span><div className="progress"><i style={{ width: "30%" }} /></div></div>
-            <div className="allocation"><span><b>成果追蹤</b><em>15%</em></span><div className="progress"><i style={{ width: "15%" }} /></div></div>
+            {(item.allocations ?? [{ label: "設備與材料", percent: 55 }, { label: "施工與改善", percent: 30 }, { label: "成果追蹤", percent: 15 }]).map(({ label, percent }) => <div className="allocation" key={label}><span><b>{label}</b><em>{percent}%</em></span><div className="progress"><i style={{ width: `${percent}%` }} /></div></div>)}
           </section>
           <section>
             <h4>專案里程碑</h4>
             <div className="receipt-timeline">
               <div className="done"><span><Check /></span><p><b>綠點支持完成</b><small>2026/07/31</small></p></div>
               <div className="active"><span>2</span><p><b>採購與改善進行中</b><small>預計 2026/08 完成</small></p></div>
-              <div><span>3</span><p><b>成果驗證與回報</b><small>完成後更新綠色信用</small></p></div>
+              <div><span>3</span><p><b>成果驗證與回報</b><small>完成後更新成果透明度</small></p></div>
             </div>
           </section>
         </div>
@@ -2341,13 +2508,13 @@ function EvidenceModal({ added, onClose, onSubmit }: { added: boolean; onClose: 
   return (
     <ModalShell title="補充低碳作業證明" onClose={onClose} small>
       {added ? (
-        <Success title="證明已完成 Demo 驗證" text="綠色信用已由 82 分提升至 86 分，金融媒合條件同步更新。">
-          <button className="button button-primary button-block" onClick={onClose}>返回信用總覽</button>
+        <Success title="證明已完成 Demo 驗證" text="成果透明度已由 82% 提升至 86%，地方合作條件同步更新。">
+          <button className="button button-primary button-block" onClick={onClose}>返回成果總覽</button>
         </Success>
       ) : (
         <>
           <div className="upload-box"><Upload /><b>低碳設備使用紀錄.pdf</b><small>Demo 已準備範例文件，可直接模擬送出</small></div>
-          <div className="receipt-box"><Row label="設備" value="節水灌溉控制器" /><Row label="使用期間" value="2026/04–2026/07" /><Row label="預估分數" value="82 → 86" /></div>
+          <div className="receipt-box"><Row label="設備" value="節水灌溉控制器" /><Row label="使用期間" value="2026/04–2026/07" /><Row label="預估透明度" value="82 → 86" /></div>
           <div className="modal-actions"><button className="button button-secondary" onClick={onClose}>取消</button><button className="button button-primary" onClick={onSubmit}>模擬送出並驗證</button></div>
         </>
       )}
@@ -2355,90 +2522,208 @@ function EvidenceModal({ added, onClose, onSubmit }: { added: boolean; onClose: 
   );
 }
 
+function ImprovementProjectModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (values: ImprovementProjectDraft) => void }) {
+  const [title, setTitle] = useState("節能溫室通風改善");
+  const [note, setNote] = useState("夏季溫室溫度過高，作物容易熱傷；計畫導入節能循環風扇與自動通風控制，降低耗損與用電。");
+  const [purpose, setPurpose] = useState("節能循環風扇、控制器與安裝");
+  const [pointsValue, setPointsValue] = useState(200);
+  const [targetPoints, setTargetPoints] = useState(24000);
+  const [impact, setImpact] = useState("預估降低溫室用電 15%");
+  const [city, setCity] = useState("雲林縣");
+  const [district, setDistrict] = useState("斗六市");
+  const [distance, setDistance] = useState(205);
+  const [completionDate, setCompletionDate] = useState("2026-12-31");
+  const [proof, setProof] = useState("產銷履歷與友善耕作紀錄");
+  const [materialPercent, setMaterialPercent] = useState(60);
+  const [executionPercent, setExecutionPercent] = useState(25);
+  const [trackingPercent, setTrackingPercent] = useState(15);
+  const [quote, setQuote] = useState("希望把溫室降溫做得更省電，也讓每一筆改善都有資料可以追蹤。");
+  const allocationTotal = materialPercent + executionPercent + trackingPercent;
+
+  function submit() {
+    if (!title.trim() || !note.trim() || !purpose.trim() || !impact.trim() || allocationTotal !== 100) return;
+    onSubmit({
+      title: title.trim(),
+      note: note.trim(),
+      purpose: purpose.trim(),
+      points: Math.max(1, pointsValue),
+      targetPoints: Math.max(1, targetPoints),
+      impact: impact.trim(),
+      city: city.trim(),
+      district: district.trim(),
+      distance: Math.max(1, distance),
+      completionDate,
+      proof,
+      allocations: [
+        { label: "設備與材料", percent: Math.max(0, materialPercent) },
+        { label: "施工與執行", percent: Math.max(0, executionPercent) },
+        { label: "成果追蹤", percent: Math.max(0, trackingPercent) },
+      ],
+      story: {
+        location: `${city.trim()}・${district.trim()}`,
+        headline: `阿蘭希望透過「${title.trim()}」，讓產地改善有清楚目標與公開進度`,
+        quote: quote.trim(),
+        paragraphs: [note.trim(), `募集的綠點將投入${purpose.trim()}，預計於 ${completionDate} 前完成，並以「${impact.trim()}」持續回報成果。`],
+      },
+    });
+  }
+
+  return (
+    <ModalShell title="建立小農改善專案" onClose={onClose} wide>
+      <div className="invoice-helper"><span><HeartHandshake /></span><div><b>把田間改善計畫公開給消費者支持</b><small>送出後會立即出現在小農專案管理與消費者「支持在地」募資區</small></div></div>
+      <div className="form-grid application-form improvement-project-form">
+        <label className="full">專案名稱<input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+        <label className="full">目前問題與改善方式<textarea value={note} onChange={(event) => setNote(event.target.value)} /></label>
+        <label className="full">綠點主要用途<input value={purpose} onChange={(event) => setPurpose(event.target.value)} /></label>
+        <label>消費者每次支持點數<input type="number" min="1" value={pointsValue} onChange={(event) => setPointsValue(Number(event.target.value))} /></label>
+        <label>專案募集目標<input type="number" min="1" value={targetPoints} onChange={(event) => setTargetPoints(Number(event.target.value))} /></label>
+        <label className="full">預期成果<input value={impact} onChange={(event) => setImpact(event.target.value)} /></label>
+        <label>縣市<input value={city} onChange={(event) => setCity(event.target.value)} /></label>
+        <label>鄉鎮市區<input value={district} onChange={(event) => setDistrict(event.target.value)} /></label>
+        <label>距離台北大安區約幾公里<input type="number" min="1" value={distance} onChange={(event) => setDistance(Number(event.target.value))} /></label>
+        <label>預計完成日期<input type="date" value={completionDate} onChange={(event) => setCompletionDate(event.target.value)} /></label>
+        <label className="full">可信資料<select value={proof} onChange={(event) => setProof(event.target.value)}><option>產銷履歷與友善耕作紀錄</option><option>無農藥檢測報告</option><option>農會輔導與設備估價單</option><option>有機驗證資料</option></select></label>
+      </div>
+      <section className="project-allocation-editor">
+        <div><h4>綠點如何支持產地</h4><p>三項用途比例合計需為 100%，消費者與影響力收據都會看到。</p></div>
+        <div className="allocation-input-grid">
+          <label>設備與材料<input type="number" min="0" max="100" value={materialPercent} onChange={(event) => setMaterialPercent(Number(event.target.value))} /><span>%</span></label>
+          <label>施工與執行<input type="number" min="0" max="100" value={executionPercent} onChange={(event) => setExecutionPercent(Number(event.target.value))} /><span>%</span></label>
+          <label>成果追蹤<input type="number" min="0" max="100" value={trackingPercent} onChange={(event) => setTrackingPercent(Number(event.target.value))} /><span>%</span></label>
+        </div>
+        <b className={allocationTotal === 100 ? "allocation-total valid" : "allocation-total"}>目前合計 {allocationTotal}% {allocationTotal === 100 ? "・可公開" : "・請調整為 100%"}</b>
+      </section>
+      <label className="project-quote-field">想對支持者說的話<textarea value={quote} onChange={(event) => setQuote(event.target.value)} /></label>
+      <div className="project-plan-preview"><span>公開後的募資摘要</span><strong>{title || "未命名專案"}</strong><p>每次支持 {Math.max(1, pointsValue).toLocaleString()} 點・目標 {Math.max(1, targetPoints).toLocaleString()} 點・{city}{district}・預計 {completionDate} 完成</p></div>
+      <p className="fine-print">本功能為 Demo；建立與支持紀錄只保留在本次瀏覽期間，重新整理後會回到預設內容。</p>
+      <div className="modal-actions"><button className="button button-secondary" onClick={onClose}>取消</button><button className="button button-primary" onClick={submit} disabled={!title.trim() || !note.trim() || !purpose.trim() || !impact.trim() || allocationTotal !== 100}><HeartHandshake />確認公開募資</button></div>
+    </ModalShell>
+  );
+}
+
+function ProgramModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (values: Omit<IncentiveProgram, "id" | "progress">) => void }) {
+  const [name, setName] = useState("社區節能行動加碼");
+  const [sponsor, setSponsor] = useState("企業 ESG 計畫");
+  const [action, setAction] = useState("完成指定節能行動並上傳證明");
+  const [rewardPoints, setRewardPoints] = useState(300);
+  const [budgetPoints, setBudgetPoints] = useState(50000);
+  const [participantCount, setParticipantCount] = useState(1000);
+  const [participantUnit, setParticipantUnit] = useState("人");
+  const [esg, setEsg] = useState("能源效率");
+
+  function submit() {
+    if (!name.trim() || !sponsor.trim() || !action.trim()) return;
+    onSubmit({
+      name: name.trim(),
+      sponsor: sponsor.trim(),
+      action: action.trim(),
+      reward: `每次 ${Math.max(1, rewardPoints).toLocaleString()} 點`,
+      budgetPoints: Math.max(1, budgetPoints),
+      participants: `${Math.max(1, participantCount).toLocaleString()} ${participantUnit}`,
+      esg,
+    });
+  }
+
+  return (
+    <ModalShell title="建立綠點激勵計畫" onClose={onClose}>
+      <div className="invoice-helper"><span><PackageCheck /></span><div><b>手動建立新的激勵任務</b><small>送出後會立即加入計畫列表，並同步更新計畫數與綠點預算</small></div></div>
+      <div className="form-grid application-form">
+        <label className="full">計畫名稱<input value={name} onChange={(event) => setName(event.target.value)} /></label>
+        <label className="full">主辦／合作單位<input value={sponsor} onChange={(event) => setSponsor(event.target.value)} /></label>
+        <label className="full">參與行動<textarea value={action} onChange={(event) => setAction(event.target.value)} /></label>
+        <label>每次回饋綠點<input type="number" min="1" value={rewardPoints} onChange={(event) => setRewardPoints(Number(event.target.value))} /></label>
+        <label>計畫綠點預算<input type="number" min="1" value={budgetPoints} onChange={(event) => setBudgetPoints(Number(event.target.value))} /></label>
+        <label>預計參與數<input type="number" min="1" value={participantCount} onChange={(event) => setParticipantCount(Number(event.target.value))} /></label>
+        <label>參與對象單位<select value={participantUnit} onChange={(event) => setParticipantUnit(event.target.value)}><option>人</option><option>戶</option><option>家企業</option><option>間門市</option></select></label>
+        <label className="full">ESG 成果面向<select value={esg} onChange={(event) => setEsg(event.target.value)}><option>能源效率</option><option>氣候行動</option><option>責任消費</option><option>地方共好</option><option>永續經濟</option></select></label>
+      </div>
+      <div className="receipt-box"><Row label="回饋規則" value={`每次 ${Math.max(1, rewardPoints).toLocaleString()} 點`} /><Row label="計畫預算" value={`${Math.max(1, budgetPoints).toLocaleString()} 點`} /><Row label="預計參與" value={`${Math.max(1, participantCount).toLocaleString()} ${participantUnit}`} /></div>
+      <p className="fine-print">本功能為 Demo；新計畫只保留在本次瀏覽期間，重新整理後會回到預設內容。</p>
+      <div className="modal-actions"><button className="button button-secondary" onClick={onClose}>取消</button><button className="button button-primary" onClick={submit} disabled={!name.trim() || !sponsor.trim() || !action.trim()}><CheckCircle2 />確認建立計畫</button></div>
+    </ModalShell>
+  );
+}
+function ProductModal({ product, onClose, onSubmit }: { product: FarmerProduct | null; onClose: () => void; onSubmit: (values: Omit<FarmerProduct, "id" | "image">) => void }) {
+  const [title, setTitle] = useState(product?.title ?? "當季友善蔬果箱");
+  const [pointsValue, setPointsValue] = useState(product?.points ?? 420);
+  const [stock, setStock] = useState(product?.stock ?? 20);
+  const [unit, setUnit] = useState(product?.unit ?? "箱");
+  const [proof, setProof] = useState(product?.proof ?? "產銷履歷 TAP-26-0718");
+  const [delivery, setDelivery] = useState(product?.delivery ?? "雲林縣與鄰近 40 公里");
+  const [description, setDescription] = useState(product?.description ?? "依本週收成搭配 5–7 種友善耕作蔬果，減塑包裝並附產地批次資訊。");
+
+  function submit() {
+    if (!title.trim()) return;
+    onSubmit({ title: title.trim(), points: Math.max(1, pointsValue), stock: Math.max(0, stock), unit, proof, delivery, description });
+  }
+
+  return (
+    <ModalShell title={product ? "編輯商品" : "上架新商品"} onClose={onClose}>
+      <div className="invoice-helper"><span>{product ? <PackageCheck /> : <ShoppingBasket />}</span><div><b>{product ? `正在管理：${product.title}` : "建立新的小農商品"}</b><small>儲存後，商品列表、兌換綠點與庫存會立即更新</small></div></div>
+      <div className="form-grid application-form">
+        <label className="full">商品名稱<input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+        <label>兌換綠點<input type="number" value={pointsValue} min="1" onChange={(event) => setPointsValue(Number(event.target.value))} /></label>
+        <label>可售庫存<input type="number" value={stock} min="0" onChange={(event) => setStock(Number(event.target.value))} /></label>
+        <label>庫存單位<select value={unit} onChange={(event) => setUnit(event.target.value)}><option>箱</option><option>包</option><option>組</option><option>份</option></select></label>
+        <label>永續證明<select value={proof} onChange={(event) => setProof(event.target.value)}><option>產銷履歷 TAP-26-0718</option><option>無農藥檢測合格</option><option>友善耕作紀錄</option><option>有機驗證資料</option></select></label>
+        <label className="full">配送區域<select value={delivery} onChange={(event) => setDelivery(event.target.value)}><option>雲林縣與鄰近 40 公里</option><option>全台冷藏配送</option><option>全台常溫配送</option><option>農場自取</option></select></label>
+        <label className="full">商品說明<textarea value={description} onChange={(event) => setDescription(event.target.value)} /></label>
+      </div>
+      <div className="receipt-box"><Row label="消費者兌換價格" value={`${Math.max(1, pointsValue).toLocaleString()} 綠點`} /><Row label="目前可售數量" value={`${Math.max(0, stock)} ${unit}`} /><Row label="配送方式" value={delivery} /></div>
+      <p className="fine-print">本功能為 Demo；資料只保留在本次瀏覽期間，重新整理後會回到預設內容。</p>
+      <div className="modal-actions"><button className="button button-secondary" onClick={onClose}>取消</button><button className="button button-primary" onClick={submit} disabled={!title.trim()}><CheckCircle2 />{product ? "儲存商品變更" : "確認上架新品"}</button></div>
+    </ModalShell>
+  );
+}
+
 function OfferModal({
-  score,
+  balance,
   offerId,
   step,
   setStep,
+  onRedeem,
   onClose,
 }: {
-  score: number;
+  balance: number;
   offerId: string;
   step: number;
   setStep: (step: number) => void;
+  onRedeem: (cost: number) => void;
   onClose: () => void;
 }) {
-  const offer = fundingOffers.find((item) => item.id === offerId) || fundingOffers[1];
-  const locked = score < offer.requiredScore;
-  const gap = Math.max(offer.requiredScore - score, 0);
-  const steps = ["方案確認", "填寫申請", "文件檢查", "送件確認"];
+  const offer = farmerBenefits.find((item) => item.id === offerId) || farmerBenefits[0];
+  const locked = balance < offer.requiredScore;
+  const gap = Math.max(offer.requiredScore - balance, 0);
+  const steps = ["資源確認", "領取資料", "兌換確認"];
 
   if (locked) {
     return (
-      <ModalShell title="信用解鎖資金方案" onClose={onClose} small>
-        <div className="unlock-hero"><span className="unlock-orb"><LockKeyhole /></span><div><small>目前綠色信用</small><strong>{score} 分</strong><p>再提升 {gap} 分，即可解鎖「{offer.name}」。</p></div></div>
-        <div className="unlock-map">
-          <div className="unlock-step done"><span><Check /></span><div><b>完成永續資料建檔</b><small>友善耕作、循環資材與產銷履歷已建立</small></div></div>
-          <div className="unlock-step active"><span>2</span><div><b>優先提升低碳作業與資訊透明</b><small>補充用電、用水、設備成效或產銷批次紀錄，預估可增加 2–4 分</small></div></div>
-          <div className="unlock-step locked"><span><LockKeyhole /></span><div><b>{offer.requiredScore} 分解鎖申請</b><small>{offer.amount}・{offer.term}・{offer.rate.replace("Demo ", "")}</small></div></div>
-        </div>
-        <button className="button button-primary button-block" onClick={onClose}>返回累積綠色信用</button>
+      <ModalShell title="農會農業資源兌換" onClose={onClose} small>
+        <div className="unlock-hero"><span className="unlock-orb"><LockKeyhole /></span><div><small>目前小農綠點</small><strong>{balance.toLocaleString()} 點</strong><p>還差 {gap.toLocaleString()} 點，即可兌換「{offer.name}」。</p></div></div>
+        <div className="receipt-box"><Row label="所需綠點" value={`${offer.requiredScore.toLocaleString()} 點`} /><Row label="合作單位" value={offer.rate} /><Row label="適用用途" value={offer.purpose} /></div>
+        <button className="button button-primary button-block" onClick={onClose}>返回累積綠點</button>
       </ModalShell>
     );
   }
 
-  if (step === 4) {
+  if (step === 3) {
     return (
-      <ModalShell title="信用解鎖資金方案" onClose={onClose} small>
-        <Success title="Demo 申請已成功送出" text="合作金融機構將依綠色信用與申請資料進行初步評估。">
-          <div className="application-number"><small>案件編號</small><strong>GF-20260731-0068</strong></div>
-        </Success>
-        <div className="application-timeline">
-          <div className="done"><span><Check /></span><p><b>完成送件</b><small>今天</small></p></div>
-          <div className="active"><span>2</span><p><b>資料初審</b><small>預估 1–2 個工作天</small></p></div>
-          <div><span>3</span><p><b>專員聯繫與媒合</b><small>預估 3–5 個工作天</small></p></div>
-        </div>
-        <button className="button button-primary button-block" onClick={onClose}>返回小農中心</button>
+      <ModalShell title="農會農業資源兌換" onClose={onClose} small>
+        <Success title="兌換申請已完成" text="合作農會將確認庫存或補助資格，並通知領取方式。"><div className="application-number"><small>兌換編號</small><strong>GF-FA-20260802-018</strong></div></Success>
+        <div className="application-timeline"><div className="done"><span><Check /></span><p><b>綠點扣抵完成</b><small>今天</small></p></div><div className="active"><span>2</span><p><b>農會確認</b><small>預估 1–2 個工作天</small></p></div><div><span>3</span><p><b>領取或輔導媒合</b><small>依資源類型通知</small></p></div></div>
+        <button className="button button-primary button-block" onClick={onClose}>返回農業資源</button>
       </ModalShell>
     );
   }
 
   return (
-    <ModalShell title="信用解鎖資金方案" onClose={onClose}>
-      <div className="application-stepper">
-        {steps.map((label, index) => <div className={index <= step ? "active" : ""} key={label}><span>{index < step ? <Check /> : index + 1}</span><b>{label}</b></div>)}
-      </div>
-      {step === 0 && (
-        <div className="application-layout">
-          <div className="application-offer"><span className="offer-status"><CheckCircle2 />信用已解鎖・{offer.category}</span><h3>{offer.name}</h3><p>{offer.description}</p><div><span>額度<b>{offer.amount}</b></span><span>期間<b>{offer.term}</b></span><span>條件<b>{offer.rate.replace("Demo ", "")}</b></span></div></div>
-          <div className="receipt-box"><Row label="目前綠色信用" value={`${score} 分`} /><Row label="建議申請金額" value={offer.suggestedLabel} /><Row label={offer.category === "資金支持" ? "支持方式" : "預估每月還款"} value={offer.paymentLabel} /><Row label="適用用途" value={offer.purpose} /></div>
-        </div>
-      )}
-      {step === 1 && (
-        <div className="form-grid application-form">
-          <label>申請金額<input type="number" defaultValue={offer.suggestedAmount} /></label>
-          <label>期望期間<select defaultValue={offer.term}><option>{offer.term}</option><option>依審查建議調整</option></select></label>
-          <label className="full">資金用途<select defaultValue={offer.purpose}><option>{offer.purpose}</option><option>節水灌溉與能源設備</option><option>友善資材與營運週轉</option><option>循環包材與冷鏈</option></select></label>
-          <label className="full">改善計畫<textarea defaultValue={offer.planText} /></label>
-        </div>
-      )}
-      {step === 2 && (
-        <div className="document-checklist">
-          <div><span><Check /></span><p><b>農場基本與營運資料</b><small>已從小農中心帶入</small></p><em>完成</em></div>
-          <div><span><Check /></span><p><b>綠色信用評估資料</b><small>目前 {score} 分，符合方案門檻</small></p><em>完成</em></div>
-          <div><span><Check /></span><p><b>設備估價單</b><small>節水灌溉設備估價單.pdf</small></p><em>Demo 已附</em></div>
-          <div><span><Check /></span><p><b>最近一期產銷紀錄</b><small>2026 年第二季產銷摘要.pdf</small></p><em>Demo 已附</em></div>
-        </div>
-      )}
-      {step === 3 && (
-        <div className="review-card">
-          <div className="review-head"><span><FileCheck2 /></span><div><small>送件前最後確認</small><h3>{offer.name}</h3></div></div>
-          <div className="receipt-box"><Row label="申請農戶" value="禾日友善農園" /><Row label="方案類型" value={offer.category} /><Row label="申請金額" value={offer.suggestedLabel} /><Row label="資金用途" value={offer.purpose} /><Row label="文件狀態" value="4 / 4 已備妥" /></div>
-          <label className="consent"><input type="checkbox" defaultChecked />我同意將本次 Demo 申請資料提供合作金融機構進行模擬評估。</label>
-        </div>
-      )}
-      <p className="fine-print">本流程為提案 Demo，不會送出真實申請；正式額度、利率與核准結果仍由金融機構依授信條件評估。</p>
-      <div className="modal-actions"><button className="button button-secondary" onClick={() => step === 0 ? onClose() : setStep(step - 1)}>{step === 0 ? "取消" : "上一步"}</button><button className="button button-primary" onClick={() => setStep(step + 1)}>{step === 3 ? "確認送出申請" : step === 0 ? "開始填寫申請" : "下一步"}</button></div>
+    <ModalShell title="農會農業資源兌換" onClose={onClose}>
+      <div className="application-stepper">{steps.map((label, index) => <div className={index <= step ? "active" : ""} key={label}><span>{index < step ? <Check /> : index + 1}</span><b>{label}</b></div>)}</div>
+      {step === 0 && <div className="application-layout"><div className="application-offer"><span className="offer-status"><CheckCircle2 />餘額足夠・{offer.category}</span><h3>{offer.name}</h3><p>{offer.description}</p><div><span>所需綠點<b>{offer.requiredScore.toLocaleString()} 點</b></span><span>提供單位<b>{offer.rate}</b></span><span>領取方式<b>{offer.term}</b></span></div></div><div className="receipt-box"><Row label="目前餘額" value={`${balance.toLocaleString()} 點`} /><Row label="兌換後餘額" value={`${(balance - offer.requiredScore).toLocaleString()} 點`} /><Row label="適用用途" value={offer.purpose} /></div></div>}
+      {step === 1 && <div className="form-grid application-form"><label className="full">領取農會<select defaultValue="雲林縣斗六市農會"><option>雲林縣斗六市農會</option><option>雲林縣古坑鄉農會</option></select></label><label>聯絡人<input defaultValue="林禾日" /></label><label>聯絡電話<input defaultValue="0912-345-678" /></label><label className="full">使用說明<textarea defaultValue={offer.planText} /></label></div>}
+      {step === 2 && <div className="review-card"><div className="review-head"><span><FileCheck2 /></span><div><small>扣點前最後確認</small><h3>{offer.name}</h3></div></div><div className="receipt-box"><Row label="申請小農" value="禾日友善農園" /><Row label="合作農會" value="雲林縣斗六市農會" /><Row label="扣抵綠點" value={`${offer.requiredScore.toLocaleString()} 點`} /><Row label="兌換後餘額" value={`${(balance - offer.requiredScore).toLocaleString()} 點`} /></div><label className="consent"><input type="checkbox" defaultChecked />我確認使用綠點兌換此農業資源，並同意由合作農會聯繫。</label></div>}
+      <p className="fine-print">本流程為提案 Demo，不會送出真實申請或扣除實際點數。</p>
+      <div className="modal-actions"><button className="button button-secondary" onClick={() => step === 0 ? onClose() : setStep(step - 1)}>{step === 0 ? "取消" : "上一步"}</button><button className="button button-primary" onClick={() => { if (step === 2) { onRedeem(offer.requiredScore); setStep(3); } else { setStep(step + 1); } }}>{step === 2 ? "確認兌換並扣點" : "下一步"}</button></div>
     </ModalShell>
   );
 }
@@ -2454,9 +2739,9 @@ function InstitutionPortfolioModal({
 }) {
   const selected = farmers.find((item) => item.name === selectedName) || farmers[0];
   return (
-    <ModalShell title="農戶組合與資金媒合" onClose={onClose}>
+    <ModalShell title="小農專案與綠點成果" onClose={onClose}>
       <div className="portfolio-summary">
-        <article><strong>4 戶</strong><span>示範農戶</span></article><article><strong>276 萬</strong><span>申請資金</span></article><article><strong>85.0</strong><span>平均綠色信用</span></article><article><strong>75%</strong><span>可進入媒合</span></article>
+        <article><strong>4 戶</strong><span>示範農戶</span></article><article><strong>38,200 點</strong><span>累積支持</span></article><article><strong>85%</strong><span>平均成果透明度</span></article><article><strong>75%</strong><span>專案正常推進</span></article>
       </div>
       <div className="portfolio-layout">
         <div className="portfolio-list">
@@ -2464,18 +2749,18 @@ function InstitutionPortfolioModal({
             <button className={item.name === selected.name ? "active" : ""} onClick={() => setSelectedName(item.name)} key={item.name}>
               <span className="portfolio-avatar"><Sprout /></span>
               <span><b>{item.name}</b><small>{item.area}・{item.crop}・{item.purpose}</small></span>
-              <em>{item.score}</em>
+              <em>{item.score}%</em>
             </button>
           ))}
         </div>
         <section className="portfolio-detail">
-          <header><div><small>目前查看</small><h3>{selected.name}</h3><p>{selected.area}地區・{selected.crop}農戶</p></div><span className={`status-pill ${selected.status === "待補件" ? "waiting" : ""}`}>{selected.status}</span></header>
-          <div className="portfolio-credit"><div className="mini-score">{selected.score}<small>綠色信用</small></div><div><b>資料完整度 {selected.completeness}%</b><div className="progress"><span style={{ width: `${selected.completeness}%` }} /></div><small>{selected.completeness < 80 ? "需補充設備估價與減碳資料" : "資料足以進入資金評估"}</small></div></div>
-          <div className="receipt-box"><Row label="申請資金" value={selected.amount} /><Row label="主要用途" value={selected.purpose} /><Row label="本月綠點支持" value={selected.name === "禾日友善農園" ? "12,680 點" : "8,240 點"} /><Row label="預估環境效益" value={selected.crop === "稻米" ? "減碳 8.6 噸／年" : "資源效率提升 15%"} /></div>
-          <div className="portfolio-actions"><button className="button button-secondary">查看永續資料</button><button className="button button-primary">進入模擬評估</button></div>
+          <header><div><small>目前查看</small><h3>{selected.name}</h3><p>{selected.area}地區・{selected.crop}農戶</p></div><span className={`status-pill ${selected.status === "待補資料" ? "waiting" : ""}`}>{selected.status}</span></header>
+          <div className="portfolio-credit"><div className="mini-score">{selected.score}<small>成果透明度</small></div><div><b>資料完整度 {selected.completeness}%</b><div className="progress"><span style={{ width: `${selected.completeness}%` }} /></div><small>{selected.completeness < 80 ? "需補充設備估價與減碳資料" : "資料足以公開專案進度"}</small></div></div>
+          <div className="receipt-box"><Row label="累積支持" value={selected.amount} /><Row label="主要用途" value={selected.purpose} /><Row label="本月綠點支持" value={selected.name === "禾日友善農園" ? "12,680 點" : "8,240 點"} /><Row label="預估環境效益" value={selected.crop === "稻米" ? "減碳 8.6 噸／年" : "資源效率提升 15%"} /></div>
+          <div className="portfolio-actions"><button className="button button-secondary">查看永續資料</button><button className="button button-primary">查看專案檢核</button></div>
         </section>
       </div>
-      <p className="fine-print">農戶、信用與資金資料皆為 Demo 模擬，用於展示金融機構如何檢視組合及媒合進度。</p>
+      <p className="fine-print">小農、綠點與成果資料皆為 Demo 模擬，用於展示平台如何追蹤專案與地方影響。</p>
     </ModalShell>
   );
 }
@@ -2483,8 +2768,8 @@ function InstitutionPortfolioModal({
 function FarmerDetailModal({ onClose }: { onClose: () => void }) {
   return (
     <ModalShell title="禾日友善農園" onClose={onClose} small>
-      <div className="farmer-summary"><div className="mini-score">86<small>綠色信用</small></div><div><h3>資料完整、穩健成長</h3><p>雲林地區葉菜農戶，目前申請節水灌溉設備改善資源。</p></div></div>
-      <div className="receipt-box"><Row label="支持綠點" value="12,680 點" /><Row label="媒合資金" value="68 萬元" /><Row label="資料完整度" value="100%" /><Row label="媒合狀態" value="審核中" /></div>
+      <div className="farmer-summary"><div className="mini-score">86<small>成果透明度</small></div><div><h3>資料完整、穩健成長</h3><p>雲林地區葉菜農戶，目前公開節水灌溉改善專案。</p></div></div>
+      <div className="receipt-box"><Row label="支持綠點" value="12,680 點" /><Row label="專案目標" value="68,000 點" /><Row label="資料完整度" value="100%" /><Row label="專案狀態" value="執行中" /></div>
       <button className="button button-primary button-block" onClick={onClose}>返回農戶清單</button>
     </ModalShell>
   );

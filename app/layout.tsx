@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     default: "綠色消費平台",
     template: "%s｜綠色消費平台",
   },
-  description: "讓每一次消費，都成為土地向前的力量。",
+  description: "把消費、低碳交通與電子帳單化為綠點，優先支持附近小農，形成可追溯的地方永續循環。",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
