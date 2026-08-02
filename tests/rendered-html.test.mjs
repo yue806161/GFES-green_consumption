@@ -88,6 +88,8 @@ test("keeps the completed demo and consumer journeys wired", async () => {
   assert.match(css, /\.order-layout/);
   assert.match(css, /\.role-cycle-node\.dimmed/);
   assert.match(css, /\.cycle-section-heading h2 \{ white-space: nowrap/);
+  assert.match(css, /\.role-cycle-node strong \{[^}]*font-size: 21px/);
+  assert.match(css, /\.role-cycle-detail-grid li \{[^}]*font-size: 16px/);
   assert.match(css, /\.receipt-more-button/);
   assert.match(packageJson, /vinext dev --port 4310 --strictPort/);
 
