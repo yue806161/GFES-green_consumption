@@ -269,6 +269,66 @@ const farmerBenefits = [
     planText: "申請電動搬運設備共購補助，預計由三戶共同使用並回報節能成果。",
     requiredScore: 3000,
   },
+  {
+    id: "smart-greenhouse",
+    category: "\u8a2d\u5099\u88dc\u52a9",
+    name: "\u667a\u6167\u6eab\u5ba4\u74b0\u63a7\u8a2d\u5099\u88dc\u52a9",
+    amount: "6,800 \u7da0\u9ede",
+    term: "\u8fb2\u6703\u5a92\u5408\u5b89\u88dd",
+    rate: "\u4f01\u696d\u914d\u5c0d\u88dc\u52a9 20%",
+    description: "\u5305\u542b\u6eab\u6fd5\u5ea6\u611f\u6e2c\u5668\u3001\u5faa\u74b0\u98a8\u6247\u8207\u81ea\u52d5\u6372\u7c3e\u63a7\u5236\uff0c\u964d\u4f4e\u9ad8\u6eab\u71b1\u50b7\u8207\u4e0d\u5fc5\u8981\u7528\u96fb\u3002",
+    purpose: "\u6eab\u5ba4\u74b0\u63a7\u8207\u7bc0\u80fd\u6539\u5584",
+    suggestedAmount: "1",
+    suggestedLabel: "1 \u4ef6\u8a2d\u5099\u88dc\u52a9",
+    paymentLabel: "\u6263\u9664 6,800 \u7da0\u9ede",
+    planText: "\u7533\u8acb\u667a\u6167\u6eab\u5ba4\u74b0\u63a7\u8a2d\u5099\uff0c\u5b8c\u6210\u5f8c\u56de\u5831\u7528\u96fb\u91cf\u3001\u6eab\u5ea6\u8207\u4f5c\u7269\u640d\u8017\u7d00\u9304\u3002",
+    requiredScore: 6800,
+  },
+  {
+    id: "cold-chain-upgrade",
+    category: "\u8a2d\u5099\u88dc\u52a9",
+    name: "\u51b7\u93c8\u9810\u51b7\u8207\u7bc0\u80fd\u51b7\u85cf\u88dc\u52a9",
+    amount: "9,500 \u7da0\u9ede",
+    term: "\u5c08\u6848\u5be9\u67e5\u5f8c\u65bd\u4f5c",
+    rate: "\u8fb2\u6703\u8207\u4f01\u696d\u5171\u540c\u88dc\u52a9",
+    description: "\u5354\u52a9\u5efa\u7f6e\u7522\u5730\u9810\u51b7\u53ca\u9ad8\u6548\u7387\u51b7\u85cf\u8a2d\u5099\uff0c\u964d\u4f4e\u63a1\u5f8c\u640d\u8017\u4e26\u5ef6\u9577\u8fb2\u7522\u54c1\u4fdd\u9bae\u671f\u3002",
+    purpose: "\u7522\u5730\u9810\u51b7\u8207\u7bc0\u80fd\u51b7\u85cf",
+    suggestedAmount: "1",
+    suggestedLabel: "1 \u4ef6\u51b7\u93c8\u6539\u5584\u6848",
+    paymentLabel: "\u6263\u9664 9,500 \u7da0\u9ede",
+    planText: "\u7533\u8acb\u7522\u5730\u9810\u51b7\u53ca\u7bc0\u80fd\u51b7\u85cf\u6539\u5584\uff0c\u8a18\u9304\u8a2d\u5099\u80fd\u8017\u8207\u63a1\u5f8c\u640d\u8017\u7387\u3002",
+    requiredScore: 9500,
+  },
+  {
+    id: "electric-farm-machinery",
+    category: "\u8fb2\u6a5f\u5171\u8cfc",
+    name: "\u96fb\u52d5\u8fb2\u6a5f\u8207\u5171\u7528\u5145\u96fb\u8a2d\u5099",
+    amount: "12,000 \u7da0\u9ede",
+    term: "\u8fb2\u6703\u5171\u540c\u63a1\u8cfc",
+    rate: "\u6700\u9ad8\u914d\u5c0d 35%",
+    description: "\u514c\u63db\u96fb\u52d5\u642c\u904b\u8eca\u3001\u96fb\u52d5\u5272\u8349\u6a5f\u8207\u5171\u7528\u5145\u96fb\u8a2d\u5099\uff0c\u4f9b\u9130\u8fd1\u5c0f\u8fb2\u9810\u7d04\u5171\u540c\u4f7f\u7528\u3002",
+    purpose: "\u4f4e\u78b3\u8fb2\u6a5f\u5171\u540c\u4f7f\u7528",
+    suggestedAmount: "1",
+    suggestedLabel: "1 \u4ef6\u5171\u8cfc\u7533\u8acb",
+    paymentLabel: "\u6263\u9664 12,000 \u7da0\u9ede",
+    planText: "\u7533\u8acb\u96fb\u52d5\u8fb2\u6a5f\u8207\u5171\u7528\u5145\u96fb\u8a2d\u5099\uff0c\u7531\u5408\u4f5c\u8fb2\u6236\u5171\u540c\u6392\u7a0b\u4e26\u56de\u5831\u4f7f\u7528\u6642\u6578\u3002",
+    requiredScore: 12000,
+  },
+  {
+    id: "solar-irrigation-pump",
+    category: "\u7da0\u80fd\u8a2d\u5099",
+    name: "\u592a\u967d\u80fd\u704c\u6e89\u6cf5\u6d66\u7cfb\u7d71",
+    amount: "15,000 \u7da0\u9ede",
+    term: "\u6bcf\u534a\u5e74\u5c08\u6848\u5be9\u67e5",
+    rate: "\u653f\u5e9c\u3001\u8fb2\u6703\u8207\u4f01\u696d\u914d\u5c0d",
+    description: "\u5c07\u50b3\u7d71\u67f4\u6cb9\u6216\u9ad8\u8017\u80fd\u62bd\u6c34\u8a2d\u5099\u6539\u70ba\u592a\u967d\u80fd\u6cf5\u6d66\uff0c\u964d\u4f4e\u704c\u6e89\u80fd\u6e90\u6210\u672c\u8207\u78b3\u6392\u3002",
+    purpose: "\u518d\u751f\u80fd\u6e90\u704c\u6e89\u8a2d\u5099",
+    suggestedAmount: "1",
+    suggestedLabel: "1 \u4ef6\u7cfb\u7d71\u88dc\u52a9",
+    paymentLabel: "\u6263\u9664 15,000 \u7da0\u9ede",
+    planText: "\u7533\u8acb\u592a\u967d\u80fd\u704c\u6e89\u6cf5\u6d66\uff0c\u5b8c\u5de5\u5f8c\u56de\u5831\u767c\u96fb\u91cf\u3001\u62bd\u6c34\u6642\u6578\u8207\u704c\u6e89\u9762\u7a4d\u3002",
+    requiredScore: 15000,
+  },
 ] as const;
 const localProjects: LocalProject[] = [
   {
@@ -393,6 +453,66 @@ const localProjects: LocalProject[] = [
   },
 ] as const;
 
+const initialImprovementProjects: LocalProject[] = [
+  {
+    id: "farmer-project-greenhouse-demo",
+    kind: "support",
+    image: "https://images.pexels.com/photos/2132171/pexels-photo-2132171.jpeg?auto=compress&cs=tinysrgb&w=500",
+    title: "\u79be\u65e5\u53cb\u5584\u8fb2\u5712\uff5c\u667a\u6167\u6eab\u5ba4\u901a\u98a8\u8207\u964d\u6eab",
+    farmer: "\u79be\u65e5\u53cb\u5584\u8fb2\u5712",
+    note: "\u590f\u5b63\u6eab\u5ba4\u9ad8\u6eab\u5bb9\u6613\u9020\u6210\u8449\u83dc\u71b1\u50b7\uff0c\u8a08\u756b\u5c0e\u5165\u7bc0\u80fd\u5faa\u74b0\u98a8\u6247\u8207\u81ea\u52d5\u901a\u98a8\u63a7\u5236\u3002",
+    purpose: "\u7bc0\u80fd\u5faa\u74b0\u98a8\u6247\u3001\u63a7\u5236\u5668\u8207\u5b89\u88dd",
+    points: 240,
+    progress: 42,
+    impact: "\u590f\u5b63\u4f5c\u7269\u71b1\u50b7\u7387\u964d\u4f4e 20%",
+    targetPoints: 96000,
+    raisedPoints: 40320,
+    supporters: 116,
+    city: "\u96f2\u6797\u7e23",
+    district: "\u6597\u516d\u5e02",
+    distance: 1.8,
+    allocations: [{ label: "\u8a2d\u5099\u8207\u6750\u6599", percent: 60 }, { label: "\u5b89\u88dd\u8207\u6539\u5584", percent: 25 }, { label: "\u6210\u679c\u8ffd\u8e64", percent: 15 }],
+  },
+  {
+    id: "farmer-project-rainwater-demo",
+    kind: "support",
+    image: "https://images.pexels.com/photos/35834140/pexels-photo-35834140.jpeg?auto=compress&cs=tinysrgb&w=500",
+    title: "\u79be\u65e5\u53cb\u5584\u8fb2\u5712\uff5c\u96e8\u6c34\u56de\u6536\u8207\u704c\u6e89\u5132\u6c34\u69fd",
+    farmer: "\u79be\u65e5\u53cb\u5584\u8fb2\u5712",
+    note: "\u589e\u8a2d\u96e8\u6c34\u96c6\u6c34\u69fd\u8207\u904e\u6ffe\u8a2d\u5099\uff0c\u5c07\u96e8\u5b63\u96e8\u6c34\u7559\u4f5c\u4e7e\u5b63\u704c\u6e89\u4f7f\u7528\u3002",
+    purpose: "\u96e8\u6c34\u56de\u6536\u69fd\u3001\u904e\u6ffe\u8207\u7ba1\u7dda",
+    points: 200,
+    progress: 55,
+    impact: "\u6bcf\u5e74\u56de\u6536\u96e8\u6c34\u7d04 420 \u5678",
+    targetPoints: 82000,
+    raisedPoints: 45100,
+    supporters: 139,
+    city: "\u96f2\u6797\u7e23",
+    district: "\u6597\u516d\u5e02",
+    distance: 2.4,
+    allocations: [{ label: "\u8a2d\u5099\u63a1\u8cfc", percent: 55 }, { label: "\u65bd\u5de5\u8207\u904b\u9001", percent: 30 }, { label: "\u6aa2\u6e2c\u8207\u7d00\u9304", percent: 15 }],
+  },
+  {
+    id: "farmer-project-compost-demo",
+    kind: "support",
+    image: "https://images.pexels.com/photos/1458694/pexels-photo-1458694.jpeg?auto=compress&cs=tinysrgb&w=500",
+    title: "\u79be\u65e5\u53cb\u5584\u8fb2\u5712\uff5c\u7530\u9593\u5806\u80a5\u8207\u571f\u58e4\u5fa9\u80b2",
+    farmer: "\u79be\u65e5\u53cb\u5584\u8fb2\u5712",
+    note: "\u5229\u7528\u8fb2\u5834\u679d\u8449\u8207\u683c\u5916\u54c1\u88fd\u4f5c\u5806\u80a5\uff0c\u6539\u5584\u571f\u58e4\u6709\u6a5f\u8cea\u4e26\u964d\u4f4e\u5316\u80a5\u4f9d\u8cf4\u3002",
+    purpose: "\u5806\u80a5\u5340\u3001\u9632\u6ef2\u8a2d\u65bd\u8207\u571f\u58e4\u6aa2\u6e2c",
+    points: 180,
+    progress: 36,
+    impact: "\u5316\u5b78\u80a5\u6599\u4f7f\u7528\u91cf\u964d\u4f4e 15%",
+    targetPoints: 64000,
+    raisedPoints: 23040,
+    supporters: 82,
+    city: "\u96f2\u6797\u7e23",
+    district: "\u6597\u516d\u5e02",
+    distance: 3.1,
+    allocations: [{ label: "\u8a2d\u5099\u8207\u6750\u6599", percent: 50 }, { label: "\u5b89\u88dd\u8207\u6539\u5584", percent: 35 }, { label: "\u6210\u679c\u8ffd\u8e64", percent: 15 }],
+  },
+];
+
 function getReceiptNumber(item: LocalProject) {
   const index = localProjects.findIndex((project) => project.id === item.id);
   const customNumber = item.id.split("").reduce((sum, character) => sum + character.charCodeAt(0), 0) % 9000;
@@ -498,7 +618,7 @@ const roleCycleDetails = {
     short: "綠色行動者",
     icon: User,
     tone: "consumer",
-    source: ["購買綠色商品取得消費回饋", "搭乘大眾運輸、改用電子帳單", "購買節能家電或完成政府企業任務"],
+    source: ["購買綠色商品取得消費回饋", "搭乘大眾運輸、改用電子帳單", "購買節能家電或完成政府企業任務", "自備環保杯、餐具或購物袋等減塑行動"],
     incentive: ["每次行動立即看見綠點回饋", "優先推薦所在地附近的小農", "支持後取得可追蹤的影響力收據"],
     benefit: ["兌換可追溯的小農好物", "直接支持產地改善專案", "把日常選擇累積成地方影響力"],
   },
@@ -518,7 +638,7 @@ const roleCycleDetails = {
     tone: "institution",
     source: ["把 ESG、政策或員工福利預算轉為綠點", "與商家及公用事業共同配對點數", "依節能、交通與電子帳單任務發放"],
     incentive: ["用明確獎勵提高綠色行動參與率", "串連地方創生、農業與淨零政策", "取得可追蹤的點數流向與成果資料"],
-    benefit: ["累積 ESG 揭露與計畫成效證據", "提升在地小農及永續經濟效益", "持續優化政策與企業激勵方案"],
+    benefit: ["累積 ESG 揭露與計畫成效證據", "提升在地小農及永續經濟效益", "提升企業形象"],
   },
 } satisfies Record<Role, { label: string; short: string; icon: typeof User; tone: string; source: string[]; incentive: string[]; benefit: string[] }>;
 
@@ -697,7 +817,7 @@ export function GreenPlatformDemo() {
   const [points, setPoints] = useState(1280);
   const [farmerPoints, setFarmerPoints] = useState(3680);
   const [farmerProducts, setFarmerProducts] = useState<FarmerProduct[]>(initialFarmerProducts);
-  const [farmerProjects, setFarmerProjects] = useState<LocalProject[]>([]);
+  const [farmerProjects, setFarmerProjects] = useState<LocalProject[]>(initialImprovementProjects);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [incentivePlans, setIncentivePlans] = useState<IncentiveProgram[]>(incentivePrograms);
   const [supportedProjectIds, setSupportedProjectIds] = useState<string[]>([]);
@@ -1055,7 +1175,7 @@ export function GreenPlatformDemo() {
 
   if (screen === "dashboard") {
     return (
-      <div className="site-shell">
+      <div className={`site-shell dashboard-shell ${previewMode === "mobile" ? "device-preview-mobile dashboard-device-preview" : ""}`}>
         <div className="dashboard">
           <aside className="sidebar">
             <button className="brand brand-button" onClick={backHome}><Brand /></button>
@@ -1121,11 +1241,18 @@ export function GreenPlatformDemo() {
                               ? "彙整綠色消費投入、環境成果與地方影響"
                               : "以下資料皆為提案展示用的模擬資料"}</p>
               </div>
-              <button className="profile-button" onClick={openLogin}>
-                <span className="avatar"><User /></span>
-                <span>{roles[role].account}</span>
-                <ChevronRight />
-              </button>
+              <div className="dashboard-top-actions">
+                <div className={`device-toggle dashboard-device-toggle ${previewMode}`} role="group" aria-label="切換功能頁裝置預覽">
+                  <span className="device-toggle-thumb" aria-hidden="true" />
+                  <button type="button" className={previewMode === "desktop" ? "active" : ""} aria-pressed={previewMode === "desktop"} onClick={() => setPreviewMode("desktop")}><Monitor />網頁</button>
+                  <button type="button" className={previewMode === "mobile" ? "active" : ""} aria-pressed={previewMode === "mobile"} onClick={() => setPreviewMode("mobile")}><Smartphone />手機</button>
+                </div>
+                <button className="profile-button" onClick={openLogin}>
+                  <span className="avatar"><User /></span>
+                  <span>{roles[role].account}</span>
+                  <ChevronRight />
+                </button>
+              </div>
             </header>
 
             {role === "consumer" && consumerPage === "overview" && (
@@ -1223,7 +1350,7 @@ export function GreenPlatformDemo() {
           </main>
         </div>
 
-        <nav className={`mobile-nav ${role === "consumer" ? "mobile-nav-consumer" : role === "farmer" ? "mobile-nav-farmer" : ""}`}>
+        <nav className={`mobile-nav ${role === "consumer" ? "mobile-nav-consumer" : role === "farmer" ? "mobile-nav-farmer" : "mobile-nav-institution"}`}>
           <button
             className={(role === "consumer" ? consumerPage : role === "farmer" ? farmerPage : institutionPage) === "overview" ? "active" : ""}
             onClick={() => role === "consumer" ? setConsumerPage("overview") : role === "farmer" ? setFarmerPage("overview") : setInstitutionPage("overview")}
@@ -1695,6 +1822,7 @@ function ConsumerDashboard({
       <Panel className="span-12" title="近期紀錄" note="多元綠點來源與使用去向">
         <div className="activity-list">
           <Activity icon={Store} title="合作通路消費回饋" note="綠田生活市集" value="+180 點" />
+          <Activity icon={Leaf} title={"\u4f7f\u7528\u74b0\u4fdd\u676f"} note={"\u81ea\u5099\u74b0\u4fdd\u676f\u6e1b\u5c11\u4e00\u6b21\u6027\u676f\u5177"} value={"+10 \u9ede"} />
           <Activity icon={Truck} title="低碳交通行動" note="大眾運輸減碳回饋" value="+80 點" />
           <Activity icon={Building2} title="節能家電汰舊換新" note="購買一級能效冷氣獲得回饋" value="+600 點" />
           <Activity icon={Receipt} title="改用電子帳單" note="政府與公用事業推廣方案" value="+50 點" />
@@ -1781,7 +1909,7 @@ function FarmerProductsPage({ products, onAdd, onEdit }: { products: FarmerProdu
         <div className="project-list project-list-expanded">{products.map((item) => <Project key={item.id} image={item.image} title={item.title} note={`${item.points.toLocaleString()} 綠點・${item.proof}・庫存 ${item.stock} ${item.unit}`} progress={100} button="編輯點數與庫存" onClick={() => onEdit(item.id)} onLearnMore={() => onEdit(item.id)} gold />)}</div>
       </Panel>
       <Panel className="span-12" title="待處理訂單" note="商品兌換後會在此集中管理備貨與配送進度">
-        <div className="table-wrap"><table><thead><tr><th>訂單</th><th>商品</th><th>兌換數量</th><th>配送地區</th><th>狀態</th></tr></thead><tbody><tr><td><b>GF-0821</b></td><td>{products[0]?.title ?? "友善葉菜箱"}</td><td>4 件</td><td>雲林縣斗六市</td><td><span className="status-pill">備貨中</span></td></tr><tr><td><b>GF-0818</b></td><td>{products[1]?.title ?? "節水栽培米"}</td><td>6 件</td><td>嘉義縣民雄鄉</td><td><span className="status-pill">待出貨</span></td></tr><tr><td><b>GF-0812</b></td><td>{products[2]?.title ?? "減塑香草茶"}</td><td>2 件</td><td>彰化縣員林市</td><td><span className="status-pill waiting">待確認</span></td></tr></tbody></table></div>
+        <div className="table-wrap"><table className="mobile-card-table orders-table"><thead><tr><th>訂單</th><th>商品</th><th>兌換數量</th><th>配送地區</th><th>狀態</th></tr></thead><tbody><tr><td><b>GF-0821</b></td><td>{products[0]?.title ?? "友善葉菜箱"}</td><td>4 件</td><td>雲林縣斗六市</td><td><span className="status-pill">備貨中</span></td></tr><tr><td><b>GF-0818</b></td><td>{products[1]?.title ?? "節水栽培米"}</td><td>6 件</td><td>嘉義縣民雄鄉</td><td><span className="status-pill">待出貨</span></td></tr><tr><td><b>GF-0812</b></td><td>{products[2]?.title ?? "減塑香草茶"}</td><td>2 件</td><td>彰化縣員林市</td><td><span className="status-pill waiting">待確認</span></td></tr></tbody></table></div>
       </Panel>
     </div>
   );
@@ -1908,7 +2036,7 @@ function InstitutionDashboard({
           <Chart><PieChart><Pie data={sourceData} dataKey="value" nameKey="name" innerRadius={58} outerRadius={88} paddingAngle={4}>{sourceData.map((item) => <Cell key={item.name} fill={item.color} />)}</Pie><Tooltip /></PieChart></Chart>
         </Panel>
         <Panel className="span-12" title="在地小農支持成效" note={`目前顯示 ${visibleFarmers.length} 戶；用於 ESG 成果揭露與地方共好追蹤`} action={<div className="panel-actions"><button className="button button-secondary" onClick={() => onDetail()}><PackageCheck />管理激勵計畫</button><button className="button button-secondary" onClick={onDownload}><Download />查看成果報告</button></div>}>
-          <div className="table-wrap"><table><thead><tr><th>農戶</th><th>地區</th><th>作物</th><th>履歷完整度</th><th>累積綠點支持</th><th>地方效益</th></tr></thead><tbody>{visibleFarmers.map((item) => <tr key={item.name}><td><b>{item.name}</b></td><td>{item.area}</td><td>{item.crop}</td><td><span className="score-pill">{item.completeness}%</span></td><td>{item.amount}</td><td>{item.purpose}</td></tr>)}</tbody></table></div>
+          <div className="table-wrap"><table className="mobile-card-table farmers-table"><thead><tr><th>農戶</th><th>地區</th><th>作物</th><th>履歷完整度</th><th>累積綠點支持</th><th>地方效益</th></tr></thead><tbody>{visibleFarmers.map((item) => <tr key={item.name}><td><b>{item.name}</b></td><td>{item.area}</td><td>{item.crop}</td><td><span className="score-pill">{item.completeness}%</span></td><td>{item.amount}</td><td>{item.purpose}</td></tr>)}</tbody></table></div>
         </Panel>
       </div>
     </>
@@ -2264,7 +2392,7 @@ function InstitutionPortfolioPage({ programs, onCreate }: { programs: IncentiveP
         <div className="incentive-grid">{programs.map((program) => <article className="incentive-card" key={program.id}><header><span>{program.esg}</span><b>{program.name}</b><small>{program.sponsor}</small></header><p>{program.action}</p><div className="incentive-data"><span>回饋方式<b>{program.reward}</b></span><span>計畫預算<b>{program.budgetPoints.toLocaleString()} 點</b></span><span>參與對象<b>{program.participants}</b></span></div><div className="progress"><span style={{ width: `${program.progress}%` }} /></div><small>{program.progress === 0 ? "新建立・尚未開始" : `年度目標達成 ${program.progress}%`}</small></article>)}</div>
       </Panel>
       <Panel className="span-12" title="ESG 可揭露成果" note="平台協助累積行動、點數流向與地方效益證據；正式評等仍依各揭露準則與評鑑機構認定">
-        <div className="table-wrap"><table><thead><tr><th>成果面向</th><th>可揭露指標</th><th>目前成果</th><th>佐證方式</th></tr></thead><tbody><tr><td>氣候行動</td><td>低碳交通參與及估算減碳</td><td>62.4 噸 CO₂e</td><td>行動紀錄與估算方法</td></tr><tr><td>責任消費</td><td>綠色消費及電子帳單轉換</td><td>15,590 人次</td><td>點數發放紀錄</td></tr><tr><td>地方共好</td><td>在地小農支持與訂單</td><td>128 戶</td><td>影響力收據與產銷履歷</td></tr><tr><td>永續經濟</td><td>農業資源回流</td><td>86,200 點</td><td>農會兌換紀錄</td></tr></tbody></table></div>
+        <div className="table-wrap"><table className="mobile-card-table esg-table"><thead><tr><th>成果面向</th><th>可揭露指標</th><th>目前成果</th><th>佐證方式</th></tr></thead><tbody><tr><td>氣候行動</td><td>低碳交通參與及估算減碳</td><td>62.4 噸 CO₂e</td><td>行動紀錄與估算方法</td></tr><tr><td>責任消費</td><td>綠色消費及電子帳單轉換</td><td>15,590 人次</td><td>點數發放紀錄</td></tr><tr><td>地方共好</td><td>在地小農支持與訂單</td><td>128 戶</td><td>影響力收據與產銷履歷</td></tr><tr><td>永續經濟</td><td>農業資源回流</td><td>86,200 點</td><td>農會兌換紀錄</td></tr></tbody></table></div>
       </Panel>
     </div>
   );
@@ -2277,7 +2405,7 @@ function InstitutionReportPage({ onDownload }: { onDownload: () => void }) {
       <div className="dashboard-grid">
         <Panel className="span-8 subpage-primary" title="綠點激勵投入趨勢" note="近六個月消費、交通、電子帳單與配對投入，單位：千點"><Chart><BarChart data={supportTrend}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="month" axisLine={false} tickLine={false} /><YAxis axisLine={false} tickLine={false} /><Tooltip /><Bar dataKey="funds" name="發放綠點" fill="#2d7250" radius={[8, 8, 0, 0]} /></BarChart></Chart></Panel>
         <Panel className="span-4" title="ESG 成果摘要" note="供銀行、政府與企業揭露及持續追蹤"><div className="report-highlights"><div><span><Trees /></span><p><b>環境面</b><small>節能家電、低碳交通、節水與減藥行動持續累積</small></p></div><div><span><Users /></span><p><b>社會面</b><small>在地小農收入、農業資源與地方供應鏈受益</small></p></div><div><span><PackageCheck /></span><p><b>治理面</b><small>點數來源、流向、履歷與成果保留可追溯紀錄</small></p></div></div></Panel>
-        <Panel className="span-12" title="可揭露成果範圍" note="平台提供績效證據；正式 ESG 評分仍依採用準則及評鑑機構認定" action={<button className="button button-primary" onClick={onDownload}><Download />下載正式版 PDF</button>}><div className="pdf-report-preview"><span>PDF</span><div><b>2026 年上半年綠色消費與在地小農影響力摘要</b><small>4 頁 A4 政策成果報告格式・含核心指標、趨勢圖、地區小農資料與 ESG 方法說明</small></div><em>GFES-DEMO-2026-H1-001</em></div><div className="table-wrap"><table><thead><tr><th>成果面向</th><th>本期成果</th><th>資料來源</th><th>更新頻率</th></tr></thead><tbody><tr><td>綠點激勵參與</td><td>20,160 人次</td><td>消費、節能家電、交通與電子帳單任務</td><td>每月</td></tr><tr><td>發放與配對綠點</td><td>478,000 點</td><td>平台點數流向紀錄</td><td>即時</td></tr><tr><td>受支持小農</td><td>128 戶</td><td>商品、支持與農會兌換紀錄</td><td>每月</td></tr><tr><td>估算減碳成果</td><td>62.4 噸 CO₂e</td><td>行動紀錄與公開估算方法</td><td>每季</td></tr></tbody></table></div></Panel>
+        <Panel className="span-12" title="可揭露成果範圍" note="平台提供績效證據；正式 ESG 評分仍依採用準則及評鑑機構認定" action={<button className="button button-primary" onClick={onDownload}><Download />下載正式版 PDF</button>}><div className="pdf-report-preview"><span>PDF</span><div><b>2026 年上半年綠色消費與在地小農影響力摘要</b><small>4 頁 A4 政策成果報告格式・含核心指標、趨勢圖、地區小農資料與 ESG 方法說明</small></div><em>GFES-DEMO-2026-H1-001</em></div><div className="table-wrap"><table className="mobile-card-table report-table"><thead><tr><th>成果面向</th><th>本期成果</th><th>資料來源</th><th>更新頻率</th></tr></thead><tbody><tr><td>綠點激勵參與</td><td>20,160 人次</td><td>消費、節能家電、交通與電子帳單任務</td><td>每月</td></tr><tr><td>發放與配對綠點</td><td>478,000 點</td><td>平台點數流向紀錄</td><td>即時</td></tr><tr><td>受支持小農</td><td>128 戶</td><td>商品、支持與農會兌換紀錄</td><td>每月</td></tr><tr><td>估算減碳成果</td><td>62.4 噸 CO₂e</td><td>行動紀錄與公開估算方法</td><td>每季</td></tr></tbody></table></div></Panel>
       </div>
     </>
   );
