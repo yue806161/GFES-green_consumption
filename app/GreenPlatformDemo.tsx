@@ -1423,7 +1423,12 @@ function RoleCycleExplorer() {
   return (
     <div id="role-cycle-explorer" className={`role-cycle-explorer ${activeRole ? "has-focus" : ""}`}>
       <div className="role-cycle-stage" aria-label="消費者、合作小農與銀行政府企業的綠點循環">
-        <div className="role-cycle-orbit" aria-hidden="true" />
+        <div className="role-cycle-orbit" aria-hidden="true">
+          <span className="cycle-direction-arrow cycle-direction-arrow-top-right">↖</span>
+          <span className="cycle-direction-arrow cycle-direction-arrow-top-left">↙</span>
+          <span className="cycle-direction-arrow cycle-direction-arrow-bottom-left">↘</span>
+          <span className="cycle-direction-arrow cycle-direction-arrow-bottom-right">↗</span>
+        </div>
         <div className="cycle-core"><HandCoins /><strong>綠點循環</strong><small>獎勵・支持・成果</small></div>
         <span className="cycle-link cycle-link-grant">發放與配對綠點</span>
         <span className="cycle-link cycle-link-support">支持專案與兌換</span>

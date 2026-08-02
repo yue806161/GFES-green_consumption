@@ -1506,8 +1506,13 @@ td svg { width: 17px; }
 .role-cycle-explorer { animation: cycle-reveal .48s cubic-bezier(.2,.72,.25,1) both; }
 .role-cycle-stage { min-height: 575px; position: relative; max-width: 980px; margin: 0 auto; }
 .role-cycle-orbit { width: 390px; height: 390px; position: absolute; left: 50%; top: 50%; border: 2px dashed rgb(31 107 89 / .28); border-radius: 50%; transform: translate(-50%, -50%); }
-.role-cycle-orbit::before { content: ""; position: absolute; inset: -9px; border: 3px solid transparent; border-top-color: #5e9447; border-right-color: #1f6b59; border-radius: 50%; animation: role-cycle-spin 12s linear infinite; }
-.role-cycle-orbit::after { content: "↻"; width: 34px; height: 34px; position: absolute; right: -18px; top: 50%; display: grid; place-items: center; color: white; font-size: 18px; font-weight: 900; border-radius: 50%; background: #1f6b59; box-shadow: 0 8px 22px rgb(31 107 89 / .22); transform: translateY(-50%); }
+.role-cycle-orbit::before { content: ""; position: absolute; inset: -9px; border: 3px solid transparent; border-top-color: #5e9447; border-right-color: #1f6b59; border-radius: 50%; animation: role-cycle-spin-counterclockwise 12s linear infinite; }
+.role-cycle-orbit::after { content: "↺ 逆時鐘"; min-width: 92px; height: 34px; padding: 0 12px; position: absolute; right: -115px; top: 50%; display: grid; place-items: center; color: white; font-size: 14px; font-weight: 900; white-space: nowrap; border-radius: 999px; background: #1f6b59; box-shadow: 0 8px 22px rgb(31 107 89 / .22); transform: translateY(-50%); }
+.cycle-direction-arrow { width: 30px; height: 30px; position: absolute; z-index: 5; display: grid; place-items: center; color: white; font-size: 20px; font-weight: 900; line-height: 1; border: 3px solid #fbfcf8; border-radius: 50%; background: #2d7250; box-shadow: 0 7px 18px rgb(31 107 89 / .24); pointer-events: none; }
+.cycle-direction-arrow-top-right { right: 9%; top: 9%; }
+.cycle-direction-arrow-top-left { left: 9%; top: 9%; }
+.cycle-direction-arrow-bottom-left { left: 9%; bottom: 9%; }
+.cycle-direction-arrow-bottom-right { right: 9%; bottom: 9%; }
 .cycle-core { width: 170px; height: 170px; position: absolute; left: 50%; top: 50%; z-index: 2; display: grid; place-items: center; align-content: center; text-align: center; color: white; border: 8px solid rgb(255 255 255 / .85); border-radius: 50%; background: linear-gradient(145deg, #173c4f, #1f6b59); box-shadow: 0 22px 55px rgb(23 60 79 / .2); transform: translate(-50%, -50%); transition: opacity .25s ease, filter .25s ease; }
 .cycle-core svg { width: 30px; margin-bottom: 8px; color: #d6ebad; }
 .cycle-core strong, .cycle-core small { display: block; }
@@ -1562,6 +1567,7 @@ td svg { width: 17px; }
 .role-cycle-prompt b { color: var(--forest-950); font-size: 20px; }
 .role-cycle-prompt p { max-width: 600px; margin: 5px 0 0; color: var(--muted); font-size: 16px; line-height: 1.6; }
 @keyframes role-cycle-spin { to { transform: rotate(360deg); } }
+@keyframes role-cycle-spin-counterclockwise { to { transform: rotate(-360deg); } }
 @keyframes cycle-reveal { from { opacity: 0; transform: translateY(22px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes cycle-detail-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 900px) {

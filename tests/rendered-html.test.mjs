@@ -66,6 +66,7 @@ test("keeps the completed demo and consumer journeys wired", async () => {
   assert.match(demo, /function ProgramModal/);
   assert.match(demo, /function ImprovementProjectModal/);
   assert.match(demo, /function RoleCycleExplorer/);
+  assert.match(demo, /cycle-direction-arrow-top-right[^>]*>↖/);
   assert.match(demo, /查看三方綠點循環/);
   assert.match(demo, /onMouseEnter=\{\(\) => setHoveredRole/);
   assert.match(demo, /function saveFarmerProject/);
@@ -87,6 +88,7 @@ test("keeps the completed demo and consumer journeys wired", async () => {
   assert.doesNotMatch(demo, /綠色信用|信用評分|融資|授信|金融合作機構/);
   assert.match(css, /\.order-layout/);
   assert.match(css, /\.role-cycle-node\.dimmed/);
+  assert.match(css, /@keyframes role-cycle-spin-counterclockwise \{ to \{ transform: rotate\(-360deg\); \} \}/);
   assert.match(css, /\.cycle-section-heading h2 \{ white-space: nowrap/);
   assert.match(css, /\.role-cycle-node strong \{[^}]*font-size: 21px/);
   assert.match(css, /\.role-cycle-detail-grid li \{[^}]*font-size: 16px/);
