@@ -1,0 +1,1 @@
+ALTER TABLE `action_submissions` ADD `proof_viewed_at` text;

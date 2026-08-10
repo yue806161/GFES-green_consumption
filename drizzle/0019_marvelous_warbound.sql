@@ -1,0 +1,2 @@
+ALTER TABLE `account_controls` ADD `account_kind` text DEFAULT 'test' NOT NULL;--> statement-breakpoint
+CREATE INDEX `idx_account_controls_kind_status_schema` ON `account_controls` (`account_kind`,`status`);

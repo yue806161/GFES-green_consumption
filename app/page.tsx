@@ -1,5 +1,5 @@
-import { GreenPlatformDemo } from "./GreenPlatformDemo";
+import { GreenPlatformApp } from "./GreenPlatformDemo";
 
 export default function Home() {
-  return <GreenPlatformDemo />;
+  return <GreenPlatformApp initialPortal="consumer" />;
 }

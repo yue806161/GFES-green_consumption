@@ -1,0 +1,1 @@
+ALTER TABLE `incentive_programs` ADD `institution_id` text DEFAULT 'institution-001' NOT NULL;

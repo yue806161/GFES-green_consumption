@@ -1,0 +1,222 @@
+[
+  {
+    "id": "heri-leafy",
+    "farmerName": "林美惠",
+    "farmName": "禾日友善農園",
+    "city": "雲林縣",
+    "district": "斗六市",
+    "crop": "友善葉菜",
+    "productName": "友善葉菜箱",
+    "cultivationImages": ["/farmer-library/heri-leafy/cultivation-1.webp", "/farmer-library/heri-leafy/cultivation-2.webp"],
+    "productImage": "/farmer-library/heri-leafy/product.webp"
+  },
+  {
+    "id": "qinggu-rice",
+    "farmerName": "陳志明",
+    "farmName": "青谷稻作",
+    "city": "嘉義縣",
+    "district": "民雄鄉",
+    "crop": "友善稻米",
+    "productName": "節水栽培米",
+    "cultivationImages": ["/farmer-library/qinggu-rice/cultivation-1.webp", "/farmer-library/qinggu-rice/cultivation-2.webp"],
+    "productImage": "/farmer-library/qinggu-rice/product.webp"
+  },
+  {
+    "id": "shanli-pomelo",
+    "farmerName": "黃美珍",
+    "farmName": "山里果園",
+    "city": "花蓮縣",
+    "district": "壽豐鄉",
+    "crop": "文旦柚",
+    "productName": "文旦柚禮盒",
+    "cultivationImages": ["/farmer-library/shanli-pomelo/cultivation-1.webp", "/farmer-library/shanli-pomelo/cultivation-2.webp"],
+    "productImage": "/farmer-library/shanli-pomelo/product.webp"
+  },
+  {
+    "id": "nuantian-tomato",
+    "farmerName": "吳淑芬",
+    "farmName": "暖田蔬果",
+    "city": "彰化縣",
+    "district": "溪州鄉",
+    "crop": "彩色番茄",
+    "productName": "彩色番茄箱",
+    "cultivationImages": ["/farmer-library/nuantian-tomato/cultivation-1.webp", "/farmer-library/nuantian-tomato/cultivation-2.webp"],
+    "productImage": "/farmer-library/nuantian-tomato/product.webp"
+  },
+  {
+    "id": "xipan-herb",
+    "farmerName": "張雅惠",
+    "farmName": "溪畔香草園",
+    "city": "苗栗縣",
+    "district": "卓蘭鎮",
+    "crop": "友善香草",
+    "productName": "無毒香草茶組",
+    "cultivationImages": ["/farmer-library/xipan-herb/cultivation-1.webp", "/farmer-library/xipan-herb/cultivation-2.webp"],
+    "productImage": "/farmer-library/xipan-herb/product.webp"
+  },
+  {
+    "id": "riguang-mango",
+    "farmerName": "李建宏",
+    "farmName": "日光芒果園",
+    "city": "台南市",
+    "district": "玉井區",
+    "crop": "愛文芒果",
+    "productName": "愛文芒果禮盒",
+    "cultivationImages": ["/farmer-library/riguang-mango/cultivation-1.webp", "/farmer-library/riguang-mango/cultivation-2.webp"],
+    "productImage": "/farmer-library/riguang-mango/product.webp"
+  },
+  {
+    "id": "jiaoxiang-banana",
+    "farmerName": "王國輝",
+    "farmName": "蕉香田園",
+    "city": "高雄市",
+    "district": "旗山區",
+    "crop": "旗山香蕉",
+    "productName": "蕉香分享箱",
+    "cultivationImages": ["/farmer-library/jiaoxiang-banana/cultivation-1.webp", "/farmer-library/jiaoxiang-banana/cultivation-2.webp"],
+    "productImage": "/farmer-library/jiaoxiang-banana/product.webp"
+  },
+  {
+    "id": "cocoa-farm",
+    "farmerName": "潘怡君",
+    "farmName": "可可森活農園",
+    "city": "屏東縣",
+    "district": "內埔鄉",
+    "crop": "台灣可可",
+    "productName": "可可豆與可可碎粒",
+    "cultivationImages": ["/farmer-library/cocoa-farm/cultivation-1.webp", "/farmer-library/cocoa-farm/cultivation-2.webp"],
+    "productImage": "/farmer-library/cocoa-farm/product.webp"
+  },
+  {
+    "id": "sanxing-scallion",
+    "farmerName": "林冠宇",
+    "farmName": "蔥滿希望農場",
+    "city": "宜蘭縣",
+    "district": "三星鄉",
+    "crop": "三星青蔥",
+    "productName": "三星青蔥鮮採組",
+    "cultivationImages": ["/farmer-library/sanxing-scallion/cultivation-1.webp", "/farmer-library/sanxing-scallion/cultivation-2.webp"],
+    "productImage": "/farmer-library/sanxing-scallion/product.webp"
+  },
+  {
+    "id": "berry-hill",
+    "farmerName": "陳思妤",
+    "farmName": "莓好丘陵",
+    "city": "苗栗縣",
+    "district": "大湖鄉",
+    "crop": "大湖草莓",
+    "productName": "草莓鮮果盒",
+    "cultivationImages": ["/farmer-library/berry-hill/cultivation-1.webp", "/farmer-library/berry-hill/cultivation-2.webp"],
+    "productImage": "/farmer-library/berry-hill/product.webp"
+  },
+  {
+    "id": "mist-tea",
+    "farmerName": "廖榮昌",
+    "farmName": "霧上茶園",
+    "city": "南投縣",
+    "district": "鹿谷鄉",
+    "crop": "高山烏龍茶",
+    "productName": "鹿谷烏龍茶",
+    "cultivationImages": ["/farmer-library/mist-tea/cultivation-1.webp", "/farmer-library/mist-tea/cultivation-2.webp"],
+    "productImage": "/farmer-library/mist-tea/product.webp"
+  },
+  {
+    "id": "red-quinoa",
+    "farmerName": "陳秀蘭",
+    "farmName": "紅藜谷農園",
+    "city": "台東縣",
+    "district": "池上鄉",
+    "crop": "台灣紅藜",
+    "productName": "台灣紅藜穀物組",
+    "cultivationImages": ["/farmer-library/red-quinoa/cultivation-1.webp", "/farmer-library/red-quinoa/cultivation-2.webp"],
+    "productImage": "/farmer-library/red-quinoa/product.webp"
+  },
+  {
+    "id": "orange-orchard",
+    "farmerName": "彭文傑",
+    "farmName": "橙香友善果園",
+    "city": "新竹縣",
+    "district": "新埔鎮",
+    "crop": "椪柑",
+    "productName": "新埔柑橘禮盒",
+    "cultivationImages": ["/farmer-library/orange-orchard/cultivation-1.webp", "/farmer-library/orange-orchard/cultivation-2.webp"],
+    "productImage": "/farmer-library/orange-orchard/product.webp"
+  },
+  {
+    "id": "hydroponic-greens",
+    "farmerName": "許佳蓉",
+    "farmName": "埤塘鮮蔬農場",
+    "city": "桃園市",
+    "district": "新屋區",
+    "crop": "水耕生菜",
+    "productName": "水耕生菜箱",
+    "cultivationImages": ["/farmer-library/hydroponic-greens/cultivation-1.webp", "/farmer-library/hydroponic-greens/cultivation-2.webp"],
+    "productImage": "/farmer-library/hydroponic-greens/product.webp"
+  },
+  {
+    "id": "yam-farm",
+    "farmerName": "簡進福",
+    "farmName": "山腳山藥園",
+    "city": "新北市",
+    "district": "金山區",
+    "crop": "金山山藥",
+    "productName": "金山山藥鮮採組",
+    "cultivationImages": ["/farmer-library/yam-farm/cultivation-1.webp", "/farmer-library/yam-farm/cultivation-2.webp"],
+    "productImage": "/farmer-library/yam-farm/product.webp"
+  },
+  {
+    "id": "pear-orchard",
+    "farmerName": "高秋雲",
+    "farmName": "梨山晴果園",
+    "city": "台中市",
+    "district": "和平區",
+    "crop": "高山梨",
+    "productName": "梨山高山梨禮盒",
+    "cultivationImages": ["/farmer-library/pear-orchard/cultivation-1.webp", "/farmer-library/pear-orchard/cultivation-2.webp"],
+    "productImage": "/farmer-library/pear-orchard/product.webp"
+  },
+  {
+    "id": "wood-ear",
+    "farmerName": "周承翰",
+    "farmName": "木耳森農場",
+    "city": "嘉義縣",
+    "district": "中埔鄉",
+    "crop": "黑木耳",
+    "productName": "黑木耳鮮乾組",
+    "cultivationImages": ["/farmer-library/wood-ear/cultivation-1.webp", "/farmer-library/wood-ear/cultivation-2.webp"],
+    "productImage": "/farmer-library/wood-ear/product.webp"
+  },
+  {
+    "id": "roselle",
+    "farmerName": "林惠美",
+    "farmName": "洛神紅農園",
+    "city": "花蓮縣",
+    "district": "光復鄉",
+    "crop": "洛神花",
+    "productName": "洛神花茶組",
+    "cultivationImages": ["/farmer-library/roselle/cultivation-1.webp", "/farmer-library/roselle/cultivation-2.webp"],
+    "productImage": "/farmer-library/roselle/product.webp"
+  },
+  {
+    "id": "sweet-potato",
+    "farmerName": "蔡坤益",
+    "farmName": "地瓜田友善農莊",
+    "city": "雲林縣",
+    "district": "水林鄉",
+    "crop": "台農地瓜",
+    "productName": "台農地瓜箱",
+    "cultivationImages": ["/farmer-library/sweet-potato/cultivation-1.webp", "/farmer-library/sweet-potato/cultivation-2.webp"],
+    "productImage": "/farmer-library/sweet-potato/product.webp"
+  },
+  {
+    "id": "kyoho-grape",
+    "farmerName": "江佩芳",
+    "farmName": "紫晶葡萄園",
+    "city": "彰化縣",
+    "district": "大村鄉",
+    "crop": "巨峰葡萄",
+    "productName": "巨峰葡萄禮盒",
+    "cultivationImages": ["/farmer-library/kyoho-grape/cultivation-1.webp", "/farmer-library/kyoho-grape/cultivation-2.webp"],
+    "productImage": "/farmer-library/kyoho-grape/product.webp"
+  }
+]

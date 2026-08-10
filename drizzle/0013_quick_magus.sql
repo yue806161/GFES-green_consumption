@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `idx_change_requests_one_pending` ON `change_requests` (`request_type`,`target_id`) WHERE "change_requests"."status" = 'pending';
