@@ -122,6 +122,45 @@ Google 登入採 OAuth 2.0／OpenID Connect 授權碼流程、`state` 驗證與 
 - 新增 D1 帳戶所有權欄位、角色資料隔離與越權操作檢查。
 - 更新 Cloudflare 正式網站及資料庫 migration。
 
+## 專案參考來源
+
+本專案依據提案文件、臺灣政府公開制度與各項開源技術文件進行需求設計。下列來源用於確認概念、流程及技術實作方向；GFES 並非環境部環保集點、財政部電子發票或農業部產銷履歷的官方服務，也尚未取得這些系統的正式 API 授權。
+
+### 專案規劃文件
+
+- 《附件二、2026 台北金融科技獎提案計畫書》：現行綠色消費循環、四種角色、七階段流程與預期成果的主要需求依據。
+- 《GreenFin_專案一開發重點與預期成果》：早期「綠色信用評分／綠色消費平台」雙方向構想；本版本僅採用其中的綠色消費平台方向。
+- 使用者於開發過程提出的角色流程、畫面、審核、履約、資料隔離與行動證明需求，作為互動原型的功能規格。
+
+### 綠色消費、生活與點數制度
+
+- [環境部環保集點](https://www.greenpoint.org.tw/)：綠色消費、大眾運輸、環保行動集點，以及點數兌換概念參考。
+- [環境部淨零綠生活行動指引](https://greenlifestyle.moenv.gov.tw/netZeroIndex)：自備環保杯與餐具、低碳運輸、在地消費、節能及日常減碳行動的分類依據。
+- [財政部電子發票整合服務平台](https://www.einvoice.nat.gov.tw/)與[電子發票應用 API 規格](https://www.einvoice.nat.gov.tw/static/ptl/ein_upload/attachments/1510206773173_0.pdf)：電子發票證明與未來正式 API 串接方向參考。
+- [經濟部能源署能源效率分級標示管理系統](https://ranking.energylabel.org.tw/product/Approval/list.aspx)：節能家電分類、產品查詢及證明資料參考。
+
+### 農業履歷、友善耕作與在地支持
+
+- [農業部產銷履歷農產品資訊網](https://taft.moa.gov.tw/)：產銷履歷、追溯碼、第三方驗證及履歷商品識別流程參考。
+- [農業部推動友善環境農業](https://www.moa.gov.tw/ws.php?id=2505838)：友善耕作、檢驗、農機具設備、環境補貼與轉型輔導項目參考。
+- [臺灣有機農業資訊網](https://epv.afa.gov.tw/)：有機農業及友善環境耕作者資料與制度參考。
+
+### 永續成果與揭露
+
+- [IFRS Foundation：IFRS Sustainability Disclosure Standards](https://www.ifrs.org/issued-standards/ifrs-sustainability-standards-navigator/)：企業永續資訊揭露架構參考。平台呈現的 ESG 成果為計畫管理與展示資料，不等同第三方 ESG 評分或依法出具的永續報告。
+
+### 技術文件與開源專案
+
+- 前端與語言：[React](https://react.dev/)、[Next.js](https://nextjs.org/docs)、[TypeScript](https://www.typescriptlang.org/docs/)、[Vite](https://vite.dev/guide/)及[Vinext](https://github.com/cloudflare/vinext)。
+- 雲端執行與部署：[Cloudflare Workers](https://developers.cloudflare.com/workers/)及[Cloudflare Pages](https://developers.cloudflare.com/pages/)。
+- 資料與檔案：[Cloudflare D1](https://developers.cloudflare.com/d1/)、[Cloudflare R2](https://developers.cloudflare.com/r2/)及[Drizzle ORM](https://orm.drizzle.team/docs/overview)。
+- 身分驗證：[Google OAuth 2.0 for Web Server Applications](https://developers.google.com/identity/protocols/oauth2/web-server)。
+- 介面元件：[Recharts](https://recharts.github.io/)及[Lucide React](https://lucide.dev/guide/react)。
+
+### 範例資料聲明
+
+除上述制度與技術來源外，網站內的小農姓名與故事、商品、改善專案、點數、距離、訂單、活動、影響力數據、PDF 範例文件及圖片組均為平台測試與提案展示資料，不代表真實人物、交易、政府核定案件或實際環境效益。正式上線前應由合作單位提供資料，並完成來源查核、授權、個資告知、文件驗證及 API 契約確認。
+
 ## 本地啟動
 
 需求：Node.js 22.13.0 以上。
