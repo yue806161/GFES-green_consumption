@@ -53,7 +53,7 @@ const roleAttacks = await Promise.all([
   action(institution, "update_integration_setting", { serviceKey: "invoice", enabled: false, rewardPoints: 0, endpointLabel: "forged", sampleResponse: "{}" }),
   action(institution, "simulate_integration", { serviceKey: "government_task", input: { task: "forged" } }),
 ]);
-for (const result of roleAttacks) assert.equal(result.response.status, 403, `role escalation was not blocked: ${JSON.stringify(result.data)}`);
+for (const result of roleAttacks) assert.ok([401, 403].includes(result.response.status), `role escalation was not blocked: ${JSON.stringify(result.data)}`);
 
 const farmerSnapshotResponse = await fetch(`${baseUrl}/api/platform`, { headers: { cookie: farmer.cookie } });
 assert.equal(farmerSnapshotResponse.status, 200);

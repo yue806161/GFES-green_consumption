@@ -58,6 +58,9 @@ import farmerImageLibrary from "./data/farmerImageLibrary.json";
 
 type Role = "consumer" | "farmer" | "institution";
 export type LoginRole = Role | "admin";
+type ConsumerPage = "overview" | "local" | "invoice" | "receipt" | "orders" | "settings";
+type FarmerPage = "overview" | "content" | "products" | "projects" | "evidence" | "funding";
+type InstitutionPage = "overview" | "portfolio" | "resource" | "report";
 
 const portalPaths: Record<LoginRole, string> = {
   consumer: "/",
@@ -65,6 +68,16 @@ const portalPaths: Record<LoginRole, string> = {
   institution: "/institution",
   admin: "/admin",
 };
+const consumerPages: ConsumerPage[] = ["overview", "local", "invoice", "receipt", "orders", "settings"];
+const farmerPages: FarmerPage[] = ["overview", "content", "products", "projects", "evidence", "funding"];
+const institutionPages: InstitutionPage[] = ["overview", "portfolio", "resource", "report"];
+
+function readPortalSection(role: Role, search: string) {
+  const section = new URLSearchParams(search).get("section");
+  if (role === "consumer") return consumerPages.includes(section as ConsumerPage) ? section as ConsumerPage : "overview";
+  if (role === "farmer") return farmerPages.includes(section as FarmerPage) ? section as FarmerPage : "overview";
+  return institutionPages.includes(section as InstitutionPage) ? section as InstitutionPage : "overview";
+}
 type ShippingDetails = {
   recipientName: string;
   recipientPhone: string;
@@ -1020,7 +1033,7 @@ function ModalShell({
   );
 }
 
-export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole } = {}) {
+export function GreenPlatformApp({ initialPortal, initialSessionExpected = false }: { initialPortal?: LoginRole; initialSessionExpected?: boolean } = {}) {
   const [screen, setScreen] = useState<"home" | "dashboard">("home");
   const [adminMode, setAdminMode] = useState(false);
   const [role, setRole] = useState<Role>(initialPortal && initialPortal !== "admin" ? initialPortal : "consumer");
@@ -1049,9 +1062,9 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
   const [lastRedeemedId, setLastRedeemedId] = useState("veggie");
   const [heroSlide, setHeroSlide] = useState(0);
   const [heroPaused, setHeroPaused] = useState(false);
-  const [consumerPage, setConsumerPage] = useState<"overview" | "local" | "invoice" | "receipt" | "orders" | "settings">("overview");
-  const [farmerPage, setFarmerPage] = useState<"overview" | "content" | "products" | "projects" | "evidence" | "funding">("overview");
-  const [institutionPage, setInstitutionPage] = useState<"overview" | "portfolio" | "resource" | "report">("overview");
+  const [consumerPage, setConsumerPage] = useState<ConsumerPage>("overview");
+  const [farmerPage, setFarmerPage] = useState<FarmerPage>("overview");
+  const [institutionPage, setInstitutionPage] = useState<InstitutionPage>("overview");
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [selectedStoryId, setSelectedStoryId] = useState<string>(stories[0].id);
   const [toast, setToast] = useState("");
@@ -1060,7 +1073,9 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
   const [backendState, setBackendState] = useState<BackendSnapshot | null>(null);
   const [backendError, setBackendError] = useState("");
   const [backendBusy, setBackendBusy] = useState(false);
-  const [accountLoading, setAccountLoading] = useState(false);
+  const [accountLoading, setAccountLoading] = useState(initialSessionExpected || (Boolean(initialPortal) && initialPortal !== "consumer"));
+  const [sessionRestoreError, setSessionRestoreError] = useState("");
+  const [sessionRestoreAttempt, setSessionRestoreAttempt] = useState(0);
   const [loginError, setLoginError] = useState("");
   const [registrationNotice, setRegistrationNotice] = useState("");
   const [csrfToken, setCsrfToken] = useState("");
@@ -1083,10 +1098,10 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
     setLastRedeemedId((current) => snapshot.redeemedProductIds.includes(current) ? current : snapshot.productsForConsumer[0]?.id ?? current);
   }
 
-  async function refreshBackend() {
+  async function refreshBackend(roleOverride: LoginRole = requestRole) {
     setBackendBusy(true);
     try {
-      const response = await fetch("/api/platform", { cache: "no-store", headers: { "x-gfes-role": requestRole } });
+      const response = await fetch("/api/platform", { cache: "no-store", credentials: "same-origin", headers: { "x-gfes-role": roleOverride } });
       if (!response.ok) throw new Error("後台資料讀取失敗");
       const snapshot = await response.json() as BackendSnapshot;
       applyBackendSnapshot(snapshot);
@@ -1223,67 +1238,82 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
 
   useEffect(() => {
     void (async () => {
-      await refreshPublicContent();
-      const params = new URLSearchParams(window.location.search);
-      const oauthError = params.get("authError");
-      const oauthRole = params.get("authRole") as LoginRole | null;
-      const approvalPending = params.get("approval") === "pending";
-      if (approvalPending) {
-        if (oauthRole && oauthRole in loginRoles) setLoginRole(oauthRole);
-        setRegistrationNotice("註冊申請已送出，需經平台管理員審核通過後才能登入，預計需要 1～3 個工作天。");
-        setModal("login");
-      }
-      if (oauthError) {
-        if (oauthRole && oauthRole in loginRoles) setLoginRole(oauthRole);
-        setLoginError(oauthError);
-        setModal("login");
-      }
-      if (oauthError || approvalPending || params.has("auth")) {
-        params.delete("authError");
-        params.delete("authRole");
-        params.delete("approval");
-        params.delete("auth");
-        const query = params.toString();
-        window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
-      }
-      const response = await fetch("/api/auth", { cache: "no-store", headers: { "x-gfes-role": requestRole } });
-      if (!response.ok) {
-        if (initialPortal) {
-          setLoginRole(initialPortal);
+      setAccountLoading(true);
+      setSessionRestoreError("");
+      try {
+        await refreshPublicContent();
+        const params = new URLSearchParams(window.location.search);
+        const oauthError = params.get("authError");
+        const oauthRole = params.get("authRole") as LoginRole | null;
+        const approvalPending = params.get("approval") === "pending";
+        if (approvalPending) {
+          if (oauthRole && oauthRole in loginRoles) setLoginRole(oauthRole);
+          setRegistrationNotice("註冊申請已送出，需經平台管理員審核通過後才能登入，預計需要 1～3 個工作天。");
           setModal("login");
         }
-        return;
-      }
-      const session = await response.json() as { role: LoginRole; csrfToken: string };
-      if (initialPortal && session.role !== initialPortal) {
-        await fetch("/api/auth", { method: "DELETE", headers: { "x-gfes-role": requestRole } }).catch(() => undefined);
-        setCsrfToken("");
-        setLoginRole(initialPortal);
-        setLoginError(`這是${loginRoles[initialPortal].label}專用入口，請使用對應角色帳號登入。`);
-        setModal("login");
-        return;
-      }
-      setAccountLoading(true);
-      setBackendState(null);
-      setCsrfToken(session.csrfToken);
-      setLoginRole(session.role);
-      const loaded = await refreshBackend();
-      if (!loaded) {
-        setLoginError("無法載入這個帳戶的專屬資料，請重新登入。測試資料不會作為替代內容顯示。");
-        setModal("login");
+        if (oauthError) {
+          if (oauthRole && oauthRole in loginRoles) setLoginRole(oauthRole);
+          setLoginError(oauthError);
+          setModal("login");
+        }
+        if (oauthError || approvalPending || params.has("auth")) {
+          params.delete("authError");
+          params.delete("authRole");
+          params.delete("approval");
+          params.delete("auth");
+          const query = params.toString();
+          window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+        }
+        const roleForPath = initialPortal ?? loginRole;
+        const response = await fetch("/api/auth", { cache: "no-store", credentials: "same-origin", headers: { "x-gfes-role": roleForPath } });
+        if (response.status === 401) {
+          setCsrfToken("");
+          setBackendState(null);
+          if (initialPortal) {
+            setLoginRole(initialPortal);
+            setModal("login");
+          }
+          return;
+        }
+        if (!response.ok) throw new Error("登入狀態暫時無法確認");
+        const session = await response.json() as { role: LoginRole; csrfToken: string };
+        if (initialPortal && session.role !== initialPortal) {
+          setCsrfToken("");
+          setLoginRole(initialPortal);
+          setLoginError(`這是${loginRoles[initialPortal].label}專用入口，請使用對應角色帳號登入。原角色仍保持登入。`);
+          setModal("login");
+          return;
+        }
+        setBackendState(null);
+        setCsrfToken(session.csrfToken);
+        setLoginRole(session.role);
+        const loaded = await refreshBackend(session.role);
+        if (!loaded) throw new Error("登入狀態已保留，但專屬資料暫時無法載入");
+        openRoleWorkspace(session.role, true);
+      } catch (error) {
+        setSessionRestoreError(error instanceof Error ? error.message : "登入狀態暫時無法確認");
+      } finally {
         setAccountLoading(false);
-        return;
       }
-      openRoleWorkspace(session.role);
-      setAccountLoading(false);
     })();
-  }, [initialPortal]);
+  }, [initialPortal, sessionRestoreAttempt]);
 
   useEffect(() => {
     if (!toast) return;
     const timer = window.setTimeout(() => setToast(""), 2600);
     return () => window.clearTimeout(timer);
   }, [toast]);
+
+  useEffect(() => {
+    if (screen !== "dashboard" || adminMode) return;
+    const section = role === "consumer" ? consumerPage : role === "farmer" ? farmerPage : institutionPage;
+    const url = new URL(window.location.href);
+    url.searchParams.delete("view");
+    url.searchParams.set("section", section);
+    const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (nextUrl !== currentUrl) window.history.replaceState(window.history.state, "", nextUrl);
+  }, [screen, adminMode, role, consumerPage, farmerPage, institutionPage]);
 
   useEffect(() => {
     if (heroPaused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -1458,9 +1488,11 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
     setBackendBusy(true);
     setLoginError("");
     setRegistrationNotice("");
+    setSessionRestoreError("");
     try {
       const response = await fetch("/api/auth", {
         method: "POST",
+        credentials: "same-origin",
         headers: { "content-type": "application/json", "x-gfes-role": loginRole },
         body: JSON.stringify({ role: loginRole, email, password }),
       });
@@ -1468,7 +1500,7 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
       if (!response.ok || !result.csrfToken) throw new Error(result.error || "登入失敗");
       setCsrfToken(result.csrfToken);
       setBackendState(null);
-      const loaded = await refreshBackend();
+      const loaded = await refreshBackend(loginRole);
       if (!loaded) throw new Error("無法載入這個帳戶的專屬資料，請重新登入。");
       openRoleWorkspace(loginRole);
     } catch (error) {
@@ -1478,7 +1510,7 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
     }
   }
 
-  function openRoleWorkspace(nextRole: LoginRole) {
+  function openRoleWorkspace(nextRole: LoginRole, preserveSection = false) {
     if (window.location.pathname !== portalPaths[nextRole]) {
       window.history.replaceState({}, "", portalPaths[nextRole]);
     }
@@ -1492,9 +1524,16 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
     setRole(nextRole);
     setModal(null);
     setScreen("dashboard");
-    setConsumerPage("overview");
-    setFarmerPage("overview");
-    setInstitutionPage("overview");
+    if (preserveSection) {
+      const section = readPortalSection(nextRole, window.location.search);
+      if (nextRole === "consumer") setConsumerPage(section as ConsumerPage);
+      if (nextRole === "farmer") setFarmerPage(section as FarmerPage);
+      if (nextRole === "institution") setInstitutionPage(section as InstitutionPage);
+    } else {
+      setConsumerPage("overview");
+      setFarmerPage("overview");
+      setInstitutionPage("overview");
+    }
     window.scrollTo({ top: 0 });
   }
 
@@ -1509,6 +1548,7 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
     try {
       const response = await fetch("/api/register", {
         method: "POST",
+        credentials: "same-origin",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ role: loginRole, displayName, username, email, password }),
       });
@@ -1525,7 +1565,7 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
       setCsrfToken(result.csrfToken);
       setLoginRole(result.role);
       setBackendState(null);
-      const loaded = await refreshBackend();
+      const loaded = await refreshBackend(result.role);
       if (!loaded) throw new Error("帳號已建立，但專屬資料載入失敗，請重新登入。");
       openRoleWorkspace(result.role);
       setToast("帳號已建立並完成登入");
@@ -1537,10 +1577,11 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
   }
 
   async function backHome() {
-    await fetch("/api/auth", { method: "DELETE", headers: { "x-gfes-role": requestRole } }).catch(() => undefined);
+    await fetch("/api/auth", { method: "DELETE", credentials: "same-origin", headers: { "x-gfes-role": requestRole } }).catch(() => undefined);
     setCsrfToken("");
     setBackendState(null);
     setBackendError("");
+    setSessionRestoreError("");
     setAdminMode(false);
     setScreen("home");
     if (initialPortal) {
@@ -1869,6 +1910,10 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
 
   if (accountLoading) {
     return <div className="admin-loading" role="status" aria-live="polite"><Brand /><h1>正在載入您的專屬帳戶</h1><p>確認身分與個人資料後才會顯示功能頁面</p></div>;
+  }
+
+  if (sessionRestoreError) {
+    return <div className="admin-loading" role="alert"><Brand /><h1>帳戶連線暫時中斷</h1><p>{sessionRestoreError}，系統不會因此將您登出。</p><button type="button" className="button button-primary" onClick={() => setSessionRestoreAttempt((attempt) => attempt + 1)}><RefreshCcw />重新連線</button></div>;
   }
 
   if (adminMode) {

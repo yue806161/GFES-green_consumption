@@ -29,7 +29,7 @@ const roleEscalation = await fetch(`${baseUrl}/api/uploads`, {
   headers: { cookie: consumer.cookie, "x-gfes-csrf": consumer.csrf },
   body: fakePdfForm({ submissionType: "farmer_evidence", evidenceType: "友善耕作紀錄", title: "越權上傳" }),
 });
-assert.equal(roleEscalation.status, 403, "consumer must not upload farmer evidence");
+assert.ok([401, 403].includes(roleEscalation.status), "consumer must not upload farmer evidence");
 
 const spoofed = await fetch(`${baseUrl}/api/uploads`, {
   method: "POST",

@@ -57,7 +57,8 @@ test("keeps the completed platform and consumer journeys wired", async () => {
     readFile(new URL("../app/api/auth/google/callback/route.ts", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /<GreenPlatformApp initialPortal="consumer" \/>/);
+  assert.match(page, /<GreenPlatformApp initialPortal="consumer" initialSessionExpected=\{initialSessionExpected\} \/>/);
+  assert.match(page, /cookieStore\.has\("gfes_session_consumer"\)/);
   assert.match(layout, /default:\s*"綠色消費平台"/);
   assert.match(layout, /把消費、低碳交通與電子帳單化為綠點/);
   assert.match(demo, /function ConsumerOrdersPage/);
@@ -372,7 +373,10 @@ test("keeps Google users on isolated real accounts", async () => {
   assert.match(platformRoute, /item\.institutionId === profileId/);
   assert.match(schema, /institutionId: text\("institution_id"\)/);
   assert.match(demo, /正在載入您的專屬帳戶/);
-  assert.match(demo, /const loaded = await refreshBackend\(\);[\s\S]{0,320}openRoleWorkspace\(session\.role\)/);
+  assert.match(demo, /useState\(initialSessionExpected \|\| \(Boolean\(initialPortal\)/, "session restoration must gate the public home screen during refresh");
+  assert.match(demo, /系統不會因此將您登出/, "temporary restore failures must not be presented as logout");
+  assert.match(demo, /openRoleWorkspace\(session\.role, true\)/, "refresh must restore the signed-in role workspace and section");
+  assert.match(demo, /const loaded = await refreshBackend\(session\.role\);[\s\S]{0,320}openRoleWorkspace\(session\.role, true\)/);
   assert.doesNotMatch(demo, /本月取得<b>510 點<\/b>/);
   assert.doesNotMatch(demo, /value="3 款"/);
   assert.doesNotMatch(demo, /<strong>46<\/strong><small>本月訂單/);
