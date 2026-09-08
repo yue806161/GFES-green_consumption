@@ -1065,6 +1065,7 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
   const [registrationNotice, setRegistrationNotice] = useState("");
   const [csrfToken, setCsrfToken] = useState("");
   const [publicContent, setPublicContent] = useState<PublicContent>({ stories: [], news: [] });
+  const requestRole = initialPortal ?? loginRole;
 
   function applyBackendSnapshot(snapshot: BackendSnapshot) {
     setBackendState(snapshot);
@@ -1085,7 +1086,7 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
   async function refreshBackend() {
     setBackendBusy(true);
     try {
-      const response = await fetch("/api/platform", { cache: "no-store" });
+      const response = await fetch("/api/platform", { cache: "no-store", headers: { "x-gfes-role": requestRole } });
       if (!response.ok) throw new Error("後台資料讀取失敗");
       const snapshot = await response.json() as BackendSnapshot;
       applyBackendSnapshot(snapshot);
@@ -1115,7 +1116,7 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
     try {
       const response = await fetch("/api/platform", {
         method: "POST",
-        headers: { "content-type": "application/json", "x-gfes-csrf": csrfToken },
+        headers: { "content-type": "application/json", "x-gfes-csrf": csrfToken, "x-gfes-role": requestRole },
         body: JSON.stringify({ ...payload, action }),
       });
       const result = await response.json() as { snapshot?: BackendSnapshot; error?: string };
@@ -1140,7 +1141,7 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
       form.set("actionType", actionType);
       form.set("note", note);
       form.set("file", file);
-      const response = await fetch("/api/uploads", { method: "POST", headers: { "x-gfes-csrf": csrfToken }, body: form });
+      const response = await fetch("/api/uploads", { method: "POST", headers: { "x-gfes-csrf": csrfToken, "x-gfes-role": requestRole }, body: form });
       const result = await response.json() as { error?: string };
       if (!response.ok) throw new Error(result.error || "行動證明上傳失敗");
       await refreshBackend();
@@ -1166,7 +1167,7 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
       form.set("title", title);
       form.set("evidenceType", evidenceType);
       form.set("file", file);
-      const response = await fetch("/api/uploads", { method: "POST", headers: { "x-gfes-csrf": csrfToken }, body: form });
+      const response = await fetch("/api/uploads", { method: "POST", headers: { "x-gfes-csrf": csrfToken, "x-gfes-role": requestRole }, body: form });
       const result = await response.json() as { error?: string };
       if (!response.ok) throw new Error(result.error || "永續證明上傳失敗");
       await refreshBackend();
@@ -1190,7 +1191,7 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
       form.set("submissionType", "farmer_media");
       form.set("mediaKind", mediaKind);
       form.set("file", file);
-      const response = await fetch("/api/uploads", { method: "POST", headers: { "x-gfes-csrf": csrfToken }, body: form });
+      const response = await fetch("/api/uploads", { method: "POST", headers: { "x-gfes-csrf": csrfToken, "x-gfes-role": requestRole }, body: form });
       const result = await response.json() as { error?: string; fileKey?: string; imageUrl?: string };
       if (!response.ok || !result.fileKey || !result.imageUrl) throw new Error(result.error || "圖片上傳失敗");
       return { fileKey: result.fileKey, imageUrl: result.imageUrl };
@@ -1245,7 +1246,7 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
         const query = params.toString();
         window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
       }
-      const response = await fetch("/api/auth", { cache: "no-store" });
+      const response = await fetch("/api/auth", { cache: "no-store", headers: { "x-gfes-role": requestRole } });
       if (!response.ok) {
         if (initialPortal) {
           setLoginRole(initialPortal);
@@ -1255,7 +1256,7 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
       }
       const session = await response.json() as { role: LoginRole; csrfToken: string };
       if (initialPortal && session.role !== initialPortal) {
-        await fetch("/api/auth", { method: "DELETE" }).catch(() => undefined);
+        await fetch("/api/auth", { method: "DELETE", headers: { "x-gfes-role": requestRole } }).catch(() => undefined);
         setCsrfToken("");
         setLoginRole(initialPortal);
         setLoginError(`這是${loginRoles[initialPortal].label}專用入口，請使用對應角色帳號登入。`);
@@ -1460,7 +1461,7 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
     try {
       const response = await fetch("/api/auth", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", "x-gfes-role": loginRole },
         body: JSON.stringify({ role: loginRole, email, password }),
       });
       const result = await response.json() as { error?: string; csrfToken?: string };
@@ -1536,7 +1537,7 @@ export function GreenPlatformApp({ initialPortal }: { initialPortal?: LoginRole 
   }
 
   async function backHome() {
-    await fetch("/api/auth", { method: "DELETE" }).catch(() => undefined);
+    await fetch("/api/auth", { method: "DELETE", headers: { "x-gfes-role": requestRole } }).catch(() => undefined);
     setCsrfToken("");
     setBackendState(null);
     setBackendError("");
@@ -2660,7 +2661,7 @@ function AdminDashboard({
   function actionProofUrl(submission: ActionSubmission) {
     return submission.id.startsWith("SAMPLE-ACTION-")
       ? `/documents/${encodeURIComponent(submission.fileName)}`
-      : `/api/uploads?submissionId=${encodeURIComponent(submission.id)}`;
+      : `/api/uploads?submissionId=${encodeURIComponent(submission.id)}&role=admin`;
   }
 
   async function viewActionProof(submission: ActionSubmission) {

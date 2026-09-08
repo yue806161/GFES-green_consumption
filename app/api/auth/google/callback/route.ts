@@ -133,7 +133,7 @@ export async function GET(request: Request) {
   const session = await createAuthSession(profileId, savedState.role);
   const portalPath = savedState.role === "consumer" ? "/" : `/${savedState.role}`;
   const headers = new Headers({ Location: `${portalPath}?auth=google`, "Cache-Control": "no-store" });
-  headers.append("Set-Cookie", sessionCookie(session.token, request));
+  headers.append("Set-Cookie", sessionCookie(session.token, request, savedState.role));
   headers.append("Set-Cookie", expiredOAuthStateCookie(request));
   return new Response(null, {
     status: 302,

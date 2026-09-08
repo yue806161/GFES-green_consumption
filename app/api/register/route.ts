@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     const session = await createAuthSession(profileId, role);
     return Response.json({ authenticated: true, role, username, csrfToken: session.csrfToken, expiresAt: session.expiresAt }, {
       status: 201,
-      headers: { "Set-Cookie": sessionCookie(session.token, request), "Cache-Control": "no-store" },
+      headers: { "Set-Cookie": sessionCookie(session.token, request, role), "Cache-Control": "no-store" },
     });
   } catch (error) {
     const message = error instanceof Error && error.message.includes("UNIQUE")

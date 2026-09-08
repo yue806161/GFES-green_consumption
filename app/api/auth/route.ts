@@ -1,4 +1,4 @@
-import { createAuthSession, deleteAuthSession, expiredSessionCookie, getAuthSession, PlatformRole, sessionCookie } from "../../../db/auth";
+import { createAuthSession, deleteAuthSession, expiredSessionCookies, getAuthSession, PlatformRole, sessionCookie } from "../../../db/auth";
 import { verifyPassword } from "../../../db/credentials";
 import { getPlatformDb } from "../../../db/platform";
 
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     await db.prepare("DELETE FROM auth_login_attempts WHERE attempt_key = ?").bind(attemptKey).run();
     const session = await createAuthSession(account.profile_id, role);
     return Response.json({ authenticated: true, role, csrfToken: session.csrfToken, expiresAt: session.expiresAt }, {
-      headers: { "Set-Cookie": sessionCookie(session.token, request), "Cache-Control": "no-store" },
+      headers: { "Set-Cookie": sessionCookie(session.token, request, role), "Cache-Control": "no-store" },
     });
   } catch {
     return Response.json({ error: "登入資料格式不正確。" }, { status: 400 });
@@ -66,6 +66,11 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const role = request.headers.get("x-gfes-role") as PlatformRole | null;
   await deleteAuthSession(request);
-  return Response.json({ ok: true }, { headers: { "Set-Cookie": expiredSessionCookie(request), "Cache-Control": "no-store" } });
+  const headers = new Headers({ "Cache-Control": "no-store" });
+  for (const cookie of expiredSessionCookies(request, ["consumer", "farmer", "institution", "admin"].includes(role ?? "") ? role : null)) {
+    headers.append("Set-Cookie", cookie);
+  }
+  return Response.json({ ok: true }, { headers });
 }
