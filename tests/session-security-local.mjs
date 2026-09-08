@@ -28,6 +28,11 @@ assert.equal(suspendedRequest.status, 401, "an existing session must be revoked 
 assert.equal((await adminUpdate(admin, "active")).status, 200);
 
 const relogin = await login("consumer", "consumer@gfes.tw", "12345678");
+for (let refresh = 0; refresh < 2; refresh += 1) {
+  const persisted = await fetch(`${baseUrl}/api/auth`, { headers: { cookie: relogin.cookie, "x-gfes-role": "consumer" } });
+  assert.equal(persisted.status, 200, "a page refresh must preserve the consumer session");
+  assert.equal((await persisted.json()).role, "consumer");
+}
 const logout = await fetch(`${baseUrl}/api/auth`, { method: "DELETE", headers: { cookie: relogin.cookie } });
 assert.equal(logout.status, 200);
 const afterLogout = await fetch(`${baseUrl}/api/platform`, { headers: { cookie: relogin.cookie } });

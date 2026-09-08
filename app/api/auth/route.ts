@@ -1,6 +1,6 @@
 import { createAuthSession, deleteAuthSession, expiredSessionCookies, getAuthSession, PlatformRole, sessionCookie } from "../../../db/auth";
 import { verifyPassword } from "../../../db/credentials";
-import { getPlatformDb } from "../../../db/platform";
+import { getRawDb } from "../../../db/index";
 
 function safeAttemptKey(request: Request, identifier: string) {
   const forwarded = request.headers.get("cf-connecting-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0] ?? "local";
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       return Response.json({ error: "請輸入有效的登入角色、帳號與密碼。" }, { status: 400 });
     }
 
-    const db = await getPlatformDb();
+    const db = await getRawDb();
     const attemptKey = safeAttemptKey(request, identifier);
     const attempt = await db.prepare("SELECT failures, blocked_until FROM auth_login_attempts WHERE attempt_key = ?").bind(attemptKey).first<{ failures: number; blocked_until: string | null }>();
     if (attempt?.blocked_until && Date.parse(attempt.blocked_until) > Date.now()) {

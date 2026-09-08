@@ -1,4 +1,4 @@
-import { getPlatformDb } from "./platform";
+import { getRawDb } from "./index";
 
 export type PlatformRole = "consumer" | "farmer" | "institution" | "admin";
 
@@ -47,7 +47,7 @@ async function hashToken(token: string) {
 }
 
 export async function createAuthSession(profileId: string, role: PlatformRole) {
-  const db = await getPlatformDb();
+  const db = await getRawDb();
   const token = randomToken();
   const tokenHash = await hashToken(token);
   const csrfToken = randomToken();
@@ -77,7 +77,7 @@ export async function getAuthSession(request: Request, allowedRoles?: PlatformRo
   const candidateRoles = roleHint ? [roleHint] : allowedRoles?.length ? allowedRoles : platformRoles;
   const candidates = [...candidateRoles.map((role) => parseCookie(request, sessionCookieName(role))), parseCookie(request, LEGACY_SESSION_COOKIE)];
   if (!candidates.some(Boolean)) return null;
-  const db = await getPlatformDb();
+  const db = await getRawDb();
   for (const token of [...new Set(candidates.filter(Boolean))]) {
     const tokenHash = await hashToken(token);
     const row = await db.prepare(`SELECT s.token, s.csrf_token, s.profile_id, s.role, s.expires_at
@@ -97,13 +97,13 @@ export async function getAuthSession(request: Request, allowedRoles?: PlatformRo
 
 export async function deleteAuthSession(request: Request) {
   const roleHint = requestedRole(request);
-  const token = roleHint
-    ? parseCookie(request, sessionCookieName(roleHint)) || parseCookie(request, LEGACY_SESSION_COOKIE)
-    : parseCookie(request, LEGACY_SESSION_COOKIE);
-  if (!token) return;
-  const tokenHash = await hashToken(token);
-  const db = await getPlatformDb();
-  await db.prepare("DELETE FROM auth_sessions WHERE token = ?").bind(tokenHash).run();
+  const tokens = roleHint
+    ? [parseCookie(request, sessionCookieName(roleHint)), parseCookie(request, LEGACY_SESSION_COOKIE)]
+    : [...platformRoles.map((role) => parseCookie(request, sessionCookieName(role))), parseCookie(request, LEGACY_SESSION_COOKIE)];
+  const uniqueTokens = [...new Set(tokens.filter(Boolean))];
+  if (uniqueTokens.length === 0) return;
+  const db = await getRawDb();
+  await db.batch(await Promise.all(uniqueTokens.map(async (token) => db.prepare("DELETE FROM auth_sessions WHERE token = ?").bind(await hashToken(token)))));
 }
 
 export async function requireAuth(request: Request, roles?: PlatformRole[], csrf = false) {
