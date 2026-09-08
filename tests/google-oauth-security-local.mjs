@@ -10,7 +10,7 @@ async function manualRedirect(path, headers = {}) {
 function assertLocalErrorRedirect(response, label) {
   assert.equal(response.status, 302, `${label}: should redirect safely`);
   const location = response.headers.get("location") ?? "";
-  assert.match(location, /^\/\?authError=/, `${label}: redirect must stay on this site`);
+  assert.match(location, /^\/(?:consumer|farmer|institution|admin)?\?authError=/, `${label}: redirect must stay on an approved local portal`);
   assert.doesNotMatch(response.headers.get("set-cookie") ?? "", /gfes_session=/, `${label}: failure must not create a login session`);
 }
 
@@ -55,6 +55,8 @@ assert.match(callbackSource, /email_verified !== true/, "unverified Google email
 assert.match(callbackSource, /provider_subject = \?/, "returning Google users must be identified by provider subject");
 assert.match(callbackSource, /已有密碼帳號，為保護帳號安全/, "existing password accounts must not be linked by email alone");
 assert.doesNotMatch(callbackSource, /UPDATE account_controls SET auth_provider = 'google'/, "email-only automatic account linking must remain disabled");
+assert.match(callbackSource, /savedState\.role === "consumer" && accountStatus === "pending"/, "legacy pending Google consumers must be activated without administrator review");
+assert.match(callbackSource, /auth_provider = 'google' AND status = 'pending'/, "consumer auto-activation must only target pending Google accounts");
 assert.match(callbackSource, /oauthStateFromCookie\(request\) !== stateHash/, "callback state must be bound to the initiating browser");
 assert.match(authSource, /HttpOnly; SameSite=Strict/, "application sessions must be HttpOnly and SameSite Strict");
 assert.match(authSource, /; Secure/, "production sessions must be Secure");
@@ -66,6 +68,7 @@ console.log(JSON.stringify({
     forgedState: "rejected",
     wrongBrowserCookie: "rejected",
     accountLinkingByEmail: "disabled",
+    consumerApproval: "not required",
     pkce: "S256",
     scopes: "openid email profile",
     refreshTokens: "not requested",

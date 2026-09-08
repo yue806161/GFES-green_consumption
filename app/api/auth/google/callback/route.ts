@@ -127,6 +127,17 @@ export async function GET(request: Request) {
     ]);
   }
 
+  // Consumers do not require identity approval. Keep older Google consumer
+  // accounts created under the previous approval policy compatible, while
+  // preserving explicit suspension and other administrator-enforced states.
+  if (savedState.role === "consumer" && accountStatus === "pending") {
+    await db.prepare(`UPDATE account_controls
+        SET status = 'active', updated_at = CURRENT_TIMESTAMP
+        WHERE profile_id = ? AND auth_provider = 'google' AND status = 'pending'`)
+      .bind(profileId).run();
+    accountStatus = "active";
+  }
+
   if (accountStatus === "pending") return returnPending(request, savedState.role);
   if (accountStatus !== "active") return returnWithError(request, "此帳號目前無法登入，請聯絡平台管理員。", savedState.role);
 
