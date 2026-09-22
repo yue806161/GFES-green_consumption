@@ -43,7 +43,6 @@ import {
   Settings,
   ScanLine,
   ShoppingBasket,
-  Smartphone,
   Sprout,
   Store,
   Truck,
@@ -1065,7 +1064,6 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
   const [consumerPage, setConsumerPage] = useState<ConsumerPage>("overview");
   const [farmerPage, setFarmerPage] = useState<FarmerPage>("overview");
   const [institutionPage, setInstitutionPage] = useState<InstitutionPage>("overview");
-  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [selectedStoryId, setSelectedStoryId] = useState<string>(stories[0].id);
   const [toast, setToast] = useState("");
   const [cycleOpen, setCycleOpen] = useState(false);
@@ -1933,7 +1931,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
 
   if (screen === "dashboard") {
     return (
-      <div className={`site-shell dashboard-shell ${previewMode === "mobile" ? "device-preview-mobile dashboard-device-preview" : ""}`}>
+      <div className="site-shell dashboard-shell">
         <div className="dashboard">
           <aside className="sidebar">
             <button className="brand brand-button" onClick={backHome}><Brand /></button>
@@ -2010,11 +2008,6 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
                               : "以下資料由平台後台統一管理"}</p>
               </div>
               <div className="dashboard-top-actions">
-                <div className={`device-toggle dashboard-device-toggle ${previewMode}`} role="group" aria-label="切換功能頁裝置預覽">
-                  <span className="device-toggle-thumb" aria-hidden="true" />
-                  <button type="button" className={previewMode === "desktop" ? "active" : ""} aria-pressed={previewMode === "desktop"} onClick={() => setPreviewMode("desktop")}><Monitor />網頁</button>
-                  <button type="button" className={previewMode === "mobile" ? "active" : ""} aria-pressed={previewMode === "mobile"} onClick={() => setPreviewMode("mobile")}><Smartphone />手機</button>
-                </div>
                 <button className="profile-button" onClick={openLogin}>
                   <span className="avatar"><User /></span>
                   <span>{signedInDisplayName ?? roles[role].account}</span>
@@ -2238,16 +2231,11 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
   }
 
   return (
-    <div className={`site-shell home-site ${previewMode === "mobile" ? "device-preview-mobile" : ""}`}>
+    <div className="site-shell home-site">
       <header className="topbar">
         <nav className="container nav">
           <div className="nav-brand-group">
             <button className="brand brand-button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><Brand /></button>
-            <div className={`device-toggle ${previewMode}`} role="group" aria-label="切換首頁裝置預覽">
-              <span className="device-toggle-thumb" aria-hidden="true" />
-              <button type="button" className={previewMode === "desktop" ? "active" : ""} aria-pressed={previewMode === "desktop"} onClick={() => setPreviewMode("desktop")}><Monitor />網頁</button>
-              <button type="button" className={previewMode === "mobile" ? "active" : ""} aria-pressed={previewMode === "mobile"} onClick={() => setPreviewMode("mobile")}><Smartphone />手機</button>
-            </div>
           </div>
           <div className="nav-links">
             <a href="#stories">在地行動</a>
