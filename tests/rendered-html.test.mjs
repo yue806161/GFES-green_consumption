@@ -42,7 +42,7 @@ test("server-renders the green consumption platform", async () => {
 });
 
 test("keeps the completed platform and consumer journeys wired", async () => {
-  const [page, layout, demo, css, packageJson, uploadRoute, platformRoute, platformBackend, schema, registerRoute, authRoute, googleCallbackRoute] = await Promise.all([
+  const [page, layout, demo, css, packageJson, uploadRoute, platformRoute, platformBackend, schema, registerRoute, authRoute, googleCallbackRoute, rewards] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/GreenPlatformDemo.tsx", import.meta.url), "utf8"),
@@ -55,6 +55,7 @@ test("keeps the completed platform and consumer journeys wired", async () => {
     readFile(new URL("../app/api/register/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/auth/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/auth/google/callback/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../db/rewards.ts", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /<GreenPlatformApp initialPortal="consumer" initialSessionExpected=\{initialSessionExpected\} \/>/);
@@ -90,6 +91,16 @@ test("keeps the completed platform and consumer journeys wired", async () => {
   assert.match(registerRoute, /const accountStatus = requiresApproval \? "pending" : "active"/);
   assert.match(registerRoute, /pendingApproval: true/);
   assert.match(registerRoute, /1～3 個工作天/);
+  assert.match(rewards, /CONSUMER_SIGNUP_BONUS_POINTS = 500/);
+  assert.match(rewards, /CONSUMER_SIGNUP_BONUS_DESCRIPTION = "新戶註冊綠點"/);
+  assert.match(registerRoute, /role === "consumer"/);
+  assert.match(registerRoute, /consumerSignupBonusSourceId\(profileId\)/);
+  assert.match(registerRoute, /signupBonusPoints: CONSUMER_SIGNUP_BONUS_POINTS/);
+  assert.match(googleCallbackRoute, /isNewConsumerAccount = true/);
+  assert.match(googleCallbackRoute, /signupBonus.*CONSUMER_SIGNUP_BONUS_POINTS/);
+  assert.match(demo, /新戶註冊贈 500 點/);
+  assert.match(demo, /500 點新戶註冊綠點已入帳/);
+  assert.match(css, /\.registration-bonus-note/);
   assert.match(authRoute, /account\?\.status === "pending"/);
   assert.match(authRoute, /管理員審核通過後才能登入/);
   assert.match(googleCallbackRoute, /account_kind, status/);
@@ -346,7 +357,7 @@ test("provides a root consumer portal and three locked backend URLs", async () =
   assert.match(demo, /專屬角色入口/);
   assert.match(demo, /這是\$\{loginRoles\[initialPortal\]\.label\}專用入口/);
   assert.match(googleRoute, /Location: `\$\{portalPath\}\?\$\{params\}`/);
-  assert.match(googleCallback, /Location: `\$\{portalPath\}\?auth=google`/);
+  assert.match(googleCallback, /redirectParams = new URLSearchParams\(\{ auth: "google" \}\)/);
 });
 
 test("keeps Google users on isolated real accounts", async () => {

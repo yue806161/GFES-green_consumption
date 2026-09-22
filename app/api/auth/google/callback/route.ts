@@ -1,6 +1,12 @@
 import { createAuthSession, PlatformRole, sessionCookie } from "../../../../../db/auth";
 import { hashOpaqueToken } from "../../../../../db/credentials";
 import { getPlatformDb } from "../../../../../db/platform";
+import {
+  CONSUMER_SIGNUP_BONUS_DESCRIPTION,
+  CONSUMER_SIGNUP_BONUS_POINTS,
+  CONSUMER_SIGNUP_BONUS_SOURCE_TYPE,
+  consumerSignupBonusSourceId,
+} from "../../../../../db/rewards";
 
 type GoogleUser = { sub?: string; email?: string; email_verified?: boolean; name?: string };
 
@@ -101,6 +107,7 @@ export async function GET(request: Request) {
 
   let profileId = linked?.profile_id;
   let accountStatus = linked?.status;
+  let isNewConsumerAccount = false;
   if (!profileId) {
     const emailAccount = await db.prepare(`SELECT ac.profile_id, p.role FROM account_controls ac
         JOIN profiles p ON p.id = ac.profile_id WHERE lower(ac.email) = ?`)
@@ -120,14 +127,29 @@ export async function GET(request: Request) {
     while (await db.prepare("SELECT profile_id FROM account_controls WHERE lower(username) = ?").bind(username).first()) {
       username = `${usernameBase.slice(0, 15)}_${crypto.randomUUID().replace(/-/g, "").slice(0, 6)}`.slice(0, 24);
     }
-    await db.batch([
+    const registrationStatements = [
       db.prepare("INSERT INTO profiles (id, role, display_name, city, district) VALUES (?, ?, ?, ?, ?)")
         .bind(profileId, savedState.role, String(googleUser.name ?? email.split("@")[0]).slice(0, 60), location.city, location.district),
       db.prepare(`INSERT INTO account_controls
         (profile_id, email, username, account_kind, status, auth_provider, provider_subject, updated_at)
         VALUES (?, ?, ?, 'real', ?, 'google', ?, CURRENT_TIMESTAMP)`)
         .bind(profileId, email, username, accountStatus, subject),
-    ]);
+    ];
+    if (savedState.role === "consumer") {
+      registrationStatements.push(db.prepare(`INSERT OR IGNORE INTO point_ledger
+        (user_id, delta_points, source_type, source_id, description, metadata_json)
+        VALUES (?, ?, ?, ?, ?, ?)`)
+        .bind(
+          profileId,
+          CONSUMER_SIGNUP_BONUS_POINTS,
+          CONSUMER_SIGNUP_BONUS_SOURCE_TYPE,
+          consumerSignupBonusSourceId(profileId),
+          CONSUMER_SIGNUP_BONUS_DESCRIPTION,
+          JSON.stringify({ campaign: "consumer-signup", accountKind: "real", authProvider: "google" }),
+        ));
+      isNewConsumerAccount = true;
+    }
+    await db.batch(registrationStatements);
   }
 
   // Consumers do not require identity approval. Keep older Google consumer
@@ -146,7 +168,9 @@ export async function GET(request: Request) {
 
   const session = await createAuthSession(profileId, savedState.role);
   const portalPath = savedState.role === "consumer" ? "/" : `/${savedState.role}`;
-  const headers = new Headers({ Location: `${portalPath}?auth=google`, "Cache-Control": "no-store" });
+  const redirectParams = new URLSearchParams({ auth: "google" });
+  if (isNewConsumerAccount) redirectParams.set("signupBonus", String(CONSUMER_SIGNUP_BONUS_POINTS));
+  const headers = new Headers({ Location: `${portalPath}?${redirectParams}`, "Cache-Control": "no-store" });
   headers.append("Set-Cookie", sessionCookie(session.token, request, savedState.role));
   headers.append("Set-Cookie", expiredOAuthStateCookie(request));
   return new Response(null, {

@@ -1,6 +1,12 @@
 import { createAuthSession, PlatformRole, sessionCookie } from "../../../db/auth";
 import { createPasswordCredential } from "../../../db/credentials";
 import { getPlatformDb } from "../../../db/platform";
+import {
+  CONSUMER_SIGNUP_BONUS_DESCRIPTION,
+  CONSUMER_SIGNUP_BONUS_POINTS,
+  CONSUMER_SIGNUP_BONUS_SOURCE_TYPE,
+  consumerSignupBonusSourceId,
+} from "../../../db/rewards";
 
 const registrationRoles = new Set<PlatformRole>(["consumer", "farmer", "institution"]);
 const defaultLocation: Record<Exclude<PlatformRole, "admin">, { city: string; district: string }> = {
@@ -39,14 +45,28 @@ export async function POST(request: Request) {
     const credential = await createPasswordCredential(password);
     const requiresApproval = role === "farmer" || role === "institution";
     const accountStatus = requiresApproval ? "pending" : "active";
-    await db.batch([
+    const registrationStatements = [
       db.prepare("INSERT INTO profiles (id, role, display_name, city, district) VALUES (?, ?, ?, ?, ?)")
         .bind(profileId, role, displayName, location.city, location.district),
       db.prepare(`INSERT INTO account_controls
         (profile_id, email, username, account_kind, status, password_hash, password_salt, auth_provider, updated_at)
         VALUES (?, ?, ?, 'real', ?, ?, ?, 'password', CURRENT_TIMESTAMP)`)
         .bind(profileId, email, username, accountStatus, credential.passwordHash, credential.passwordSalt),
-    ]);
+    ];
+    if (role === "consumer") {
+      registrationStatements.push(db.prepare(`INSERT OR IGNORE INTO point_ledger
+        (user_id, delta_points, source_type, source_id, description, metadata_json)
+        VALUES (?, ?, ?, ?, ?, ?)`)
+        .bind(
+          profileId,
+          CONSUMER_SIGNUP_BONUS_POINTS,
+          CONSUMER_SIGNUP_BONUS_SOURCE_TYPE,
+          consumerSignupBonusSourceId(profileId),
+          CONSUMER_SIGNUP_BONUS_DESCRIPTION,
+          JSON.stringify({ campaign: "consumer-signup", accountKind: "real" }),
+        ));
+    }
+    await db.batch(registrationStatements);
 
     if (requiresApproval) {
       return Response.json({
@@ -60,7 +80,14 @@ export async function POST(request: Request) {
     }
 
     const session = await createAuthSession(profileId, role);
-    return Response.json({ authenticated: true, role, username, csrfToken: session.csrfToken, expiresAt: session.expiresAt }, {
+    return Response.json({
+      authenticated: true,
+      role,
+      username,
+      signupBonusPoints: CONSUMER_SIGNUP_BONUS_POINTS,
+      csrfToken: session.csrfToken,
+      expiresAt: session.expiresAt,
+    }, {
       status: 201,
       headers: { "Set-Cookie": sessionCookie(session.token, request, role), "Cache-Control": "no-store" },
     });

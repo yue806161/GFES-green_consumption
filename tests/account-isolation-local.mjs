@@ -65,14 +65,20 @@ async function activate(admin, account) {
 const firstConsumer = await register("consumer", "isoa");
 const secondConsumer = await register("consumer", "isob");
 assert.ok(firstConsumer.cookie && secondConsumer.cookie);
+assert.equal(firstConsumer.data.signupBonusPoints, 500);
+assert.equal(secondConsumer.data.signupBonusPoints, 500);
 const firstSession = { role: "consumer", cookie: firstConsumer.cookie, csrf: firstConsumer.data.csrfToken };
 const secondSession = { role: "consumer", cookie: secondConsumer.cookie, csrf: secondConsumer.data.csrfToken };
 const firstSnapshot = await snapshot(firstSession);
 const secondSnapshot = await snapshot(secondSession);
 for (const data of [firstSnapshot, secondSnapshot]) {
-  assert.equal(data.consumer.points, 0);
+  assert.equal(data.consumer.points, 500);
   assert.deepEqual(data.orders, []);
-  assert.deepEqual(data.ledger, []);
+  assert.equal(data.ledger.length, 1);
+  assert.equal(data.ledger[0].deltaPoints, 500);
+  assert.equal(data.ledger[0].sourceType, "new_consumer_registration");
+  assert.equal(data.ledger[0].description, "新戶註冊綠點");
+  assert.match(data.ledger[0].sourceId, /^new-consumer-registration:consumer-/);
   assert.deepEqual(data.supportedProjectIds, []);
   assert.deepEqual(data.redeemedProductIds, []);
   assert.deepEqual(data.actionSubmissions, []);

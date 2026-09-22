@@ -706,6 +706,11 @@ img { display: block; max-width: 100%; }
 .password-field input { padding-right: 64px; }
 .password-field button { height: 34px; padding: 0 9px; position: absolute; right: 7px; bottom: 7px; color: var(--forest-700); border: 0; border-radius: 8px; background: #edf4e9; font-size: 11px; font-weight: 900; cursor: pointer; }
 .login-error { padding: 11px 13px; color: #8c2d27; border: 1px solid #e8b7ae; border-radius: 11px; background: #fff0ed; font-size: 12px; font-weight: 800; }
+.registration-bonus-note { padding: 14px 15px; display: flex; align-items: center; gap: 12px; color: #184735; border: 1px solid rgb(216 167 47 / .38); border-radius: 14px; background: linear-gradient(145deg, #fff9e8, #f2f8e9); }
+.registration-bonus-note > svg { width: 25px; height: 25px; flex: 0 0 25px; color: #ba8616; }
+.registration-bonus-note span, .registration-bonus-note strong, .registration-bonus-note small { display: block; }
+.registration-bonus-note strong { font-size: 15px; }
+.registration-bonus-note small { margin-top: 3px; color: #65766d; font-size: 12px; line-height: 1.5; }
 .registration-approval-notice { margin-top: 14px; padding: 20px; display: grid; gap: 15px; border: 1px solid rgb(45 114 80 / .24); border-radius: 18px; background: linear-gradient(145deg, #f5faef, #fffdf7); box-shadow: 0 14px 32px rgb(28 79 56 / .08); }
 .registration-approval-notice header { display: flex; align-items: center; gap: 12px; }
 .registration-approval-notice header > span { flex: 0 0 auto; width: 44px; height: 44px; display: grid; place-items: center; color: white; border-radius: 14px; background: var(--forest-700); }

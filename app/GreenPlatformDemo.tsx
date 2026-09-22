@@ -1244,6 +1244,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
         const oauthError = params.get("authError");
         const oauthRole = params.get("authRole") as LoginRole | null;
         const approvalPending = params.get("approval") === "pending";
+        const signupBonusPoints = Number(params.get("signupBonus") ?? 0);
         if (approvalPending) {
           if (oauthRole && oauthRole in loginRoles) setLoginRole(oauthRole);
           setRegistrationNotice("註冊申請已送出，需經平台管理員審核通過後才能登入，預計需要 1～3 個工作天。");
@@ -1259,6 +1260,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
           params.delete("authRole");
           params.delete("approval");
           params.delete("auth");
+          params.delete("signupBonus");
           const query = params.toString();
           window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
         }
@@ -1288,6 +1290,9 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
         const loaded = await refreshBackend(session.role);
         if (!loaded) throw new Error("登入狀態已保留，但專屬資料暫時無法載入");
         openRoleWorkspace(session.role, true);
+        if (session.role === "consumer" && signupBonusPoints === 500) {
+          setToast("新戶註冊成功，已獲得 500 點新戶註冊綠點");
+        }
       } catch (error) {
         setSessionRestoreError(error instanceof Error ? error.message : "登入狀態暫時無法確認");
       } finally {
@@ -1550,7 +1555,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ role: loginRole, displayName, username, email, password }),
       });
-      const result = await response.json() as { error?: string; csrfToken?: string; role?: LoginRole; pendingApproval?: boolean; message?: string; estimatedReviewTime?: string };
+      const result = await response.json() as { error?: string; csrfToken?: string; role?: LoginRole; pendingApproval?: boolean; message?: string; estimatedReviewTime?: string; signupBonusPoints?: number };
       if (!response.ok || !result.role) throw new Error(result.error || "註冊失敗");
       if (result.pendingApproval) {
         const message = result.message || `註冊申請已送出，管理員審核約需 ${result.estimatedReviewTime || "1～3 個工作天"}。`;
@@ -1566,7 +1571,9 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
       const loaded = await refreshBackend(result.role);
       if (!loaded) throw new Error("帳號已建立，但專屬資料載入失敗，請重新登入。");
       openRoleWorkspace(result.role);
-      setToast("帳號已建立並完成登入");
+      setToast(result.role === "consumer" && result.signupBonusPoints === 500
+        ? "帳號已建立，500 點新戶註冊綠點已入帳"
+        : "帳號已建立並完成登入");
     } catch (error) {
       setLoginError(error instanceof Error ? error.message : "註冊失敗，請稍後再試。");
     } finally {
@@ -3060,7 +3067,7 @@ function LoginModal({
       <div className="login-layout">
         <div className="login-photo">
           <strong>選擇你的角色，走進同一個綠色循環。</strong>
-          <span>{mode === "login" ? "登入後會依角色進入對應的前台或管理後台。" : role === "consumer" ? "消費者建立帳號後即可開始使用平台。" : "送出註冊後，平台管理員會先確認角色與申請資料。"}</span>
+          <span>{mode === "login" ? "登入後會依角色進入對應的前台或管理後台。" : role === "consumer" ? "消費者建立帳號後即可獲得 500 點新戶註冊綠點。" : "送出註冊後，平台管理員會先確認角色與申請資料。"}</span>
         </div>
         <div>
           <span className="eyebrow">{lockedRole ? "專屬角色入口" : "選擇角色"}</span>
@@ -3107,6 +3114,7 @@ function LoginModal({
             </form>
           ) : (
             <form className="login-credentials registration-form" onSubmit={submitRegistration}>
+              {role === "consumer" && <div className="registration-bonus-note"><HandCoins /><span><strong>新戶註冊贈 500 點</strong><small>帳號建立成功後自動入帳，每個新帳號限領一次。</small></span></div>}
               {role !== "consumer" && <label>{role === "farmer" ? "農場／小農名稱" : "單位名稱"}<input type="text" autoComplete="name" value={displayName} onChange={(event) => setDisplayName(event.target.value)} minLength={2} maxLength={60} required /></label>}
               <label>使用者名稱<input type="text" autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value.toLowerCase())} pattern="[a-z0-9_]{4,24}" minLength={4} maxLength={24} placeholder="4–24 個英文字母、數字或底線" title="請輸入 4 至 24 個英文字母、數字或底線" required /></label>
               <label>電子信箱<input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" required /></label>
