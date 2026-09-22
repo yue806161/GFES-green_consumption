@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../node_modules/wrangler/config-schema.json",
+  "name": "gfes",
+  "pages_build_output_dir": "./public",
+  "compatibility_date": "2026-09-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "GOOGLE_CLIENT_ID": "73198426773-p72ql56u0kphgdjdln4k9t1u2pp157tr.apps.googleusercontent.com",
+    "GOOGLE_REDIRECT_URI": "https://gfes.pages.dev/api/auth/google/callback"
+  },
+  "services": [
+    {
+      "binding": "BACKEND",
+      "service": "gfes-green-consumption-backend"
+    }
+  ]
+}

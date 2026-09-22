@@ -6,10 +6,12 @@ GFES 是一套具備 Cloudflare D1 後台的綠點循環平台，串聯消費者
 
 ## 正式網站與角色入口
 
-- 消費者入口：[https://gfes-green-consumption.pages.dev/](https://gfes-green-consumption.pages.dev/)
-- 合作小農後台：[https://gfes-green-consumption.pages.dev/farmer](https://gfes-green-consumption.pages.dev/farmer)
-- 銀行／政府／企業後台：[https://gfes-green-consumption.pages.dev/institution](https://gfes-green-consumption.pages.dev/institution)
-- 平台管理員後台：[https://gfes-green-consumption.pages.dev/admin](https://gfes-green-consumption.pages.dev/admin)
+- 消費者入口：[https://gfes.pages.dev/](https://gfes.pages.dev/)
+- 合作小農後台：[https://gfes.pages.dev/farmer](https://gfes.pages.dev/farmer)
+- 銀行／政府／企業後台：[https://gfes.pages.dev/institution](https://gfes.pages.dev/institution)
+- 平台管理員後台：[https://gfes.pages.dev/admin](https://gfes.pages.dev/admin)
+
+這四個入口只部署本儲存庫 `yue806161/GFES-green_consumption` 的 GFES 綠色消費平台，並共用同一套 GFES 帳號、D1 資料及 R2 上傳內容；不會連接 `stoy95536/GreenFin` 的程式、資料庫或上傳儲存桶。
 
 ## 四種平台角色
 
@@ -108,7 +110,7 @@ GFES 是一套具備 Cloudflare D1 後台的綠點循環平台，串聯消費者
 
 消費者、合作小農及銀行／政府／企業可從登入視窗建立唯一的使用者名稱與電子信箱，之後可使用其中任一項登入；帳號會寫入 D1 並依所選角色進入對應介面，平台管理員不開放自行註冊。消費者註冊後可直接使用；合作小農及銀行／政府／企業需等待管理員審核，審核畫面會提示約需 1～3 個工作天。
 
-Google 登入採 OAuth 2.0／OpenID Connect 授權碼流程、`state` 驗證與 PKCE，需設定 `GOOGLE_CLIENT_ID`、`GOOGLE_CLIENT_SECRET`、`GOOGLE_REDIRECT_URI`，並在 Google Cloud Console 登錄完全相同的 `https://gfes-green-consumption.pages.dev/api/auth/google/callback`。
+Google 登入採 OAuth 2.0／OpenID Connect 授權碼流程、`state` 驗證與 PKCE，需設定 `GOOGLE_CLIENT_ID`、`GOOGLE_CLIENT_SECRET`、`GOOGLE_REDIRECT_URI`，並在 Google Cloud Console 登錄完全相同的 `https://gfes.pages.dev/api/auth/google/callback`。
 
 ## 2026-08-10 更新內容
 
