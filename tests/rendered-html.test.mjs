@@ -68,6 +68,9 @@ test("keeps the completed platform and consumer journeys wired", async () => {
   assert.match(demo, /pattern="\[a-z0-9_\]\{4,24\}"/);
   assert.match(demo, /使用 Google 登入/);
   assert.doesNotMatch(demo, /使用 Google 註冊/);
+  assert.match(demo, /role === "consumer" &&/);
+  assert.match(demo, /onGoogleLogin\("consumer"\)/);
+  assert.match(demo, /Google 登入僅提供消費者使用/);
   assert.match(demo, /role === "consumer" \? username : displayName/);
   assert.match(demo, /role !== "consumer" && <label>/);
   assert.doesNotMatch(demo, /本機預覽帳號/);
@@ -90,8 +93,7 @@ test("keeps the completed platform and consumer journeys wired", async () => {
   assert.match(authRoute, /account\?\.status === "pending"/);
   assert.match(authRoute, /管理員審核通過後才能登入/);
   assert.match(googleCallbackRoute, /account_kind, status/);
-  assert.match(googleCallbackRoute, /accountStatus = savedState\.role === "consumer" \? "active" : "pending"/);
-  assert.match(googleCallbackRoute, /returnPending\(request, savedState\.role\)/);
+  assert.match(googleCallbackRoute, /savedState\.role !== "consumer"/);
   assert.match(demo, /registration-approval-notice/);
   assert.match(demo, /申請已送出，等待管理員審核/);
   assert.match(demo, /合作小農與銀行／政府／企業需經管理員審核通過後才能登入/);

@@ -41,7 +41,7 @@ export async function GET(request: Request) {
   const state = requestUrl.searchParams.get("state") ?? "";
   const code = requestUrl.searchParams.get("code") ?? "";
   const oauthError = requestUrl.searchParams.get("error");
-  if (oauthError) return returnWithError(request, "Google 授權已取消，尚未建立帳號。");
+  if (oauthError) return returnWithError(request, "Google 授權已取消，尚未登入。");
   if (!state || !code) return returnWithError(request, "Google 授權資料不完整，請重新操作。");
 
   const db = await getPlatformDb();
@@ -54,7 +54,10 @@ export async function GET(request: Request) {
     .bind(stateHash).first<{ role: Exclude<PlatformRole, "admin">; code_verifier: string; redirect_uri: string; expires_at: string }>();
   await db.prepare("DELETE FROM oauth_states WHERE state_hash = ?").bind(stateHash).run();
   if (!savedState || Date.parse(savedState.expires_at) <= Date.now()) {
-    return returnWithError(request, "Google 註冊驗證已逾時，請重新操作。");
+    return returnWithError(request, "Google 登入驗證已逾時，請重新操作。");
+  }
+  if (savedState.role !== "consumer") {
+    return returnWithError(request, "Google 登入僅提供消費者使用，其他角色請使用帳號密碼登入。", savedState.role);
   }
 
   const { env } = await import("cloudflare:workers");
@@ -63,7 +66,7 @@ export async function GET(request: Request) {
     GOOGLE_CLIENT_ID: request.headers.get("x-gfes-internal-google-client-id") ?? configured.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: request.headers.get("x-gfes-internal-google-client-secret") ?? configured.GOOGLE_CLIENT_SECRET,
   };
-  if (!secrets.GOOGLE_CLIENT_ID || !secrets.GOOGLE_CLIENT_SECRET) return returnWithError(request, "Google 註冊服務尚未完成設定。", savedState.role);
+  if (!secrets.GOOGLE_CLIENT_ID || !secrets.GOOGLE_CLIENT_SECRET) return returnWithError(request, "Google 登入服務尚未完成設定。", savedState.role);
 
   const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",

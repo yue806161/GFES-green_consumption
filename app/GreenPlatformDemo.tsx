@@ -1804,9 +1804,13 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
           onEnter={enterDashboard}
           onRegister={registerAccount}
           onGoogleLogin={(selectedRole) => {
+            if (selectedRole !== "consumer") {
+              setLoginError("Google 登入僅提供消費者使用，其他角色請使用帳號密碼登入。");
+              return;
+            }
             const isLocalPreview = ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname);
-            const authOrigin = isLocalPreview ? "https://gfes-green-consumption.pages.dev" : "";
-            window.location.assign(`${authOrigin}/api/auth/google?role=${encodeURIComponent(selectedRole)}`);
+            const authOrigin = isLocalPreview ? "https://gfes.pages.dev" : "";
+            window.location.assign(`${authOrigin}/api/auth/google?role=consumer`);
           }}
         />
       )}
@@ -3106,10 +3110,10 @@ function LoginModal({
               <button className="button button-primary button-block" type="submit" disabled={busy}>
                 {role === "consumer" ? "登入消費者前台" : `登入${loginRoles[role].label}後台`}<ArrowRight />
               </button>
-              {role !== "admin" && (
+              {role === "consumer" && (
                 <>
                   <div className="auth-divider"><span>或</span></div>
-                  <button className="google-register-button" type="button" disabled={busy} onClick={() => onGoogleLogin(role)}><span aria-hidden="true">G</span>使用 Google 登入</button>
+                  <button className="google-register-button" type="button" disabled={busy} onClick={() => onGoogleLogin("consumer")}><span aria-hidden="true">G</span>使用 Google 登入</button>
                 </>
               )}
             </form>

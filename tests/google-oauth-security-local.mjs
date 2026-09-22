@@ -17,6 +17,12 @@ function assertLocalErrorRedirect(response, label) {
 const invalidRole = await manualRedirect("/api/auth/google?role=admin");
 assertLocalErrorRedirect(invalidRole, "admin self-registration");
 
+const farmerRole = await manualRedirect("/api/auth/google?role=farmer");
+assertLocalErrorRedirect(farmerRole, "farmer Google login");
+
+const institutionRole = await manualRedirect("/api/auth/google?role=institution");
+assertLocalErrorRedirect(institutionRole, "institution Google login");
+
 const unknownRole = await manualRedirect("/api/auth/google?role=attacker");
 assertLocalErrorRedirect(unknownRole, "unknown role");
 
@@ -50,8 +56,10 @@ assert.match(startSource, /scope", "openid email profile"/, "Google scopes must 
 assert.match(startSource, /GOOGLE_REDIRECT_URI/, "redirect URI must come from server-side configuration");
 assert.match(startSource, /HttpOnly; SameSite=Lax/, "OAuth state cookie must be inaccessible to scripts and survive the top-level callback");
 assert.match(startSource, /recentAttempts/, "OAuth starts must be rate limited");
+assert.match(startSource, /role !== "consumer"/, "Google login must only be available to consumers");
 assert.doesNotMatch(startSource, /access_type.*offline/, "registration must not request a refresh token");
 assert.match(callbackSource, /email_verified !== true/, "unverified Google email addresses must be rejected");
+assert.match(callbackSource, /savedState\.role !== "consumer"/, "callbacks for non-consumer OAuth states must be rejected");
 assert.match(callbackSource, /provider_subject = \?/, "returning Google users must be identified by provider subject");
 assert.match(callbackSource, /已有密碼帳號，為保護帳號安全/, "existing password accounts must not be linked by email alone");
 assert.doesNotMatch(callbackSource, /UPDATE account_controls SET auth_provider = 'google'/, "email-only automatic account linking must remain disabled");

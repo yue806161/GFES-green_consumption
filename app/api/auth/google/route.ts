@@ -2,8 +2,6 @@ import { hashOpaqueToken } from "../../../../db/credentials";
 import { PlatformRole } from "../../../../db/auth";
 import { getPlatformDb } from "../../../../db/platform";
 
-const registrationRoles = new Set<PlatformRole>(["consumer", "farmer", "institution"]);
-
 function randomUrlSafeToken(byteLength = 32) {
   const bytes = crypto.getRandomValues(new Uint8Array(byteLength));
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -45,7 +43,7 @@ async function oauthAttemptKey(request: Request) {
 
 export async function GET(request: Request) {
   const role = new URL(request.url).searchParams.get("role") as PlatformRole | null;
-  if (!role || !registrationRoles.has(role)) return returnWithError(request, "請先選擇消費者、小農或銀行／政府／企業角色。", role);
+  if (role !== "consumer") return returnWithError(request, "Google 登入僅提供消費者使用，其他角色請使用帳號密碼登入。", role);
 
   const { env } = await import("cloudflare:workers");
   const configured = env as unknown as { GOOGLE_CLIENT_ID?: string; GOOGLE_CLIENT_SECRET?: string; GOOGLE_REDIRECT_URI?: string };
@@ -55,9 +53,9 @@ export async function GET(request: Request) {
     GOOGLE_REDIRECT_URI: request.headers.get("x-gfes-internal-google-redirect-uri") ?? configured.GOOGLE_REDIRECT_URI,
   };
   if (!secrets.GOOGLE_CLIENT_ID || !secrets.GOOGLE_CLIENT_SECRET || !secrets.GOOGLE_REDIRECT_URI) {
-    return returnWithError(request, "Google 註冊尚未完成 Client ID、Client Secret 與回呼網址設定。", role);
+    return returnWithError(request, "Google 登入尚未完成 Client ID、Client Secret 與回呼網址設定。", role);
   }
-  if (!validRedirectUri(secrets.GOOGLE_REDIRECT_URI)) return returnWithError(request, "Google 註冊回呼網址設定不符合安全規則。", role);
+  if (!validRedirectUri(secrets.GOOGLE_REDIRECT_URI)) return returnWithError(request, "Google 登入回呼網址設定不符合安全規則。", role);
 
   const state = randomUrlSafeToken();
   const verifier = randomUrlSafeToken(48);
@@ -70,7 +68,7 @@ export async function GET(request: Request) {
       WHERE attempt_key = ? AND created_at >= datetime('now', '-10 minutes')`)
     .bind(attemptKey).first<{ count: number }>();
   if (Number(recentAttempts?.count ?? 0) >= 10) {
-    return returnWithError(request, "Google 註冊操作過於頻繁，請十分鐘後再試。", role);
+    return returnWithError(request, "Google 登入操作過於頻繁，請十分鐘後再試。", role);
   }
   await db.batch([
     db.prepare("INSERT INTO oauth_states (state_hash, role, code_verifier, redirect_uri, attempt_key, expires_at) VALUES (?, ?, ?, ?, ?, ?)")
