@@ -11,7 +11,7 @@ GFES 是一套具備 Cloudflare D1 後台的綠點循環平台，串聯消費者
 - 銀行／政府／企業後台：[https://gfes.pages.dev/institution](https://gfes.pages.dev/institution)
 - 平台管理員後台：[https://gfes.pages.dev/admin](https://gfes.pages.dev/admin)
 
-這四個入口只部署本儲存庫 `yue806161/GFES-green_consumption` 的 GFES 綠色消費平台，並共用同一套 GFES 帳號、D1 資料及 R2 上傳內容；不會連接 `stoy95536/GreenFin` 的程式、資料庫或上傳儲存桶。
+這四個入口只部署本儲存庫 `yue806161/GFES-green_consumption` 的 GFES 綠色消費平台，並共用獨立的 `gfes-backend`、`gfes-db` 與 `gfes-uploads`；不會連接 `stoy95536/GreenFin`，也不會與舊站 `gfes-green-consumption.pages.dev` 共用程式後端、資料庫或上傳儲存桶。
 
 ## 四種平台角色
 

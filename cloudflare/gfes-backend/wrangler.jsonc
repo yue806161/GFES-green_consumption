@@ -1,0 +1,35 @@
+{
+  "$schema": "../../../node_modules/wrangler/config-schema.json",
+  "name": "gfes-backend",
+  "main": "../../dist/server/index.js",
+  "workers_dev": false,
+  "compatibility_date": "2026-09-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "keep_vars": true,
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "GOOGLE_REDIRECT_URI": "https://gfes.pages.dev/api/auth/google/callback"
+  },
+  "assets": {
+    "directory": "../../dist/client"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "gfes-db",
+      "database_id": "568a4d56-2d4e-49fb-8615-f3694f0c4bd2",
+      "migrations_dir": "../../drizzle"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "UPLOADS",
+      "bucket_name": "gfes-uploads"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  }
+}

@@ -1,7 +1,7 @@
 export default {
   async fetch(request, env) {
     const publicUrl = new URL(request.url);
-    const backendUrl = new URL(`${publicUrl.pathname}${publicUrl.search}`, "https://gfes-green-consumption.internal");
+    const backendUrl = new URL(`${publicUrl.pathname}${publicUrl.search}`, "https://gfes.internal");
     const backendRequest = new Request(backendUrl, request);
 
     if (env.GOOGLE_CLIENT_ID) {
