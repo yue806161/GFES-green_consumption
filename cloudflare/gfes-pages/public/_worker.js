@@ -7,8 +7,9 @@ export default {
     if (env.GOOGLE_CLIENT_ID) {
       backendRequest.headers.set("x-gfes-internal-google-client-id", env.GOOGLE_CLIENT_ID);
     }
-    if (env.GOOGLE_CLIENT_SECRET) {
-      backendRequest.headers.set("x-gfes-internal-google-client-secret", env.GOOGLE_CLIENT_SECRET);
+    const googleClientSecret = env.GOOGLE_CLIENT_SECRET1 ?? env.GOOGLE_CLIENT_SECRET;
+    if (googleClientSecret) {
+      backendRequest.headers.set("x-gfes-internal-google-client-secret", googleClientSecret);
     }
     if (env.GOOGLE_REDIRECT_URI) {
       backendRequest.headers.set("x-gfes-internal-google-redirect-uri", env.GOOGLE_REDIRECT_URI);

@@ -1071,7 +1071,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
   const [backendState, setBackendState] = useState<BackendSnapshot | null>(null);
   const [backendError, setBackendError] = useState("");
   const [backendBusy, setBackendBusy] = useState(false);
-  const [accountLoading, setAccountLoading] = useState(initialSessionExpected || (Boolean(initialPortal) && initialPortal !== "consumer"));
+  const [accountLoading, setAccountLoading] = useState(initialSessionExpected);
   const [sessionRestoreError, setSessionRestoreError] = useState("");
   const [sessionRestoreAttempt, setSessionRestoreAttempt] = useState(0);
   const [loginError, setLoginError] = useState("");
@@ -1236,7 +1236,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
 
   useEffect(() => {
     void (async () => {
-      setAccountLoading(true);
+      if (initialSessionExpected) setAccountLoading(true);
       setSessionRestoreError("");
       try {
         await refreshPublicContent();
@@ -1271,7 +1271,6 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
           setBackendState(null);
           if (initialPortal) {
             setLoginRole(initialPortal);
-            setModal("login");
           }
           return;
         }
@@ -1280,8 +1279,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
         if (initialPortal && session.role !== initialPortal) {
           setCsrfToken("");
           setLoginRole(initialPortal);
-          setLoginError(`這是${loginRoles[initialPortal].label}專用入口，請使用對應角色帳號登入。原角色仍保持登入。`);
-          setModal("login");
+          setToast(`這是${loginRoles[initialPortal].label}專用入口；目前帳戶仍保持登入，請按「登入平台」切換角色。`);
           return;
         }
         setBackendState(null);
@@ -1591,10 +1589,8 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
     setScreen("home");
     if (initialPortal) {
       setLoginRole(initialPortal);
-      setModal("login");
-    } else {
-      setModal(null);
     }
+    setModal(null);
     window.scrollTo({ top: 0 });
   }
 
@@ -3105,7 +3101,7 @@ function LoginModal({
               <button className="button button-primary button-block" type="submit" disabled={busy}>
                 {role === "consumer" ? "登入消費者前台" : `登入${loginRoles[role].label}後台`}<ArrowRight />
               </button>
-              {role === "consumer" && (
+              {role === "consumer" && (!lockedRole || lockedRole === "consumer") && (
                 <>
                   <div className="auth-divider"><span>或</span></div>
                   <button className="google-register-button" type="button" disabled={busy} onClick={() => onGoogleLogin("consumer")}><span aria-hidden="true">G</span>使用 Google 登入</button>
