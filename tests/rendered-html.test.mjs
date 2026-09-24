@@ -230,7 +230,11 @@ test("keeps the completed platform and consumer journeys wired", async () => {
   assert.match(demo, /我已確認上述資料及附件正確/);
   assert.match(demo, /確認送出並進入審核/);
   assert.match(demo, /送出後由管理員審核，核准才會發放綠點/);
-  assert.match(demo, /查看正式繳交文件範例/);
+  assert.doesNotMatch(demo, /查看正式繳交文件範例/);
+  assert.match(demo, /accept="\.pdf,\.png,\.jpg,\.jpeg,\.heic,application\/pdf,image\/png,image\/jpeg,image\/heic"/);
+  assert.match(demo, /檔案格式不支援/);
+  assert.match(uploadRoute, /actionProofTypesByExtension/);
+  assert.match(uploadRoute, /hasHeicBrand/);
   assert.match(demo, /不接受無關的一般照片/);
   assert.match(demo, /farmerEvidenceRequirements/);
   assert.match(demo, /選擇永續證明檔案/);
@@ -384,7 +388,7 @@ test("keeps Google users on isolated real accounts", async () => {
   assert.match(platformRoute, /item\.institutionId === profileId/);
   assert.match(schema, /institutionId: text\("institution_id"\)/);
   assert.match(demo, /正在載入您的專屬帳戶/);
-  assert.match(demo, /useState\(initialSessionExpected \|\| \(Boolean\(initialPortal\)/, "session restoration must gate the public home screen during refresh");
+  assert.match(demo, /useState\(initialSessionExpected\)/, "session restoration must gate the public home screen during refresh");
   assert.match(demo, /系統不會因此將您登出/, "temporary restore failures must not be presented as logout");
   assert.match(demo, /openRoleWorkspace\(session\.role, true\)/, "refresh must restore the signed-in role workspace and section");
   assert.match(demo, /const loaded = await refreshBackend\(session\.role\);[\s\S]{0,320}openRoleWorkspace\(session\.role, true\)/);

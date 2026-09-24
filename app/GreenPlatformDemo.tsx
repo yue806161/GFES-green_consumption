@@ -3230,6 +3230,7 @@ function ConsumerDashboard({
   const [selectedActionType, setSelectedActionType] = useState(greenActions[0].type);
   const [proofNote, setProofNote] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofFileError, setProofFileError] = useState("");
   const [fileInputKey, setFileInputKey] = useState(0);
   const [proofConfirmOpen, setProofConfirmOpen] = useState(false);
   const selectedAction = greenActions.find((item) => item.type === selectedActionType) ?? greenActions[0];
@@ -3238,6 +3239,22 @@ function ConsumerDashboard({
     event.preventDefault();
     if (!proofFile) return;
     setProofConfirmOpen(true);
+  }
+
+  function handleProofFileChange(file: File | null) {
+    setProofFileError("");
+    if (!file) {
+      setProofFile(null);
+      return;
+    }
+    const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+    if (!["pdf", "png", "jpg", "jpeg", "heic"].includes(extension)) {
+      setProofFile(null);
+      setProofFileError("檔案格式不支援，僅接受 PDF、PNG、JPG、JPEG 或 HEIC 檔案。");
+      setFileInputKey((current) => current + 1);
+      return;
+    }
+    setProofFile(file);
   }
 
   async function confirmProofSubmit() {
@@ -3270,13 +3287,13 @@ function ConsumerDashboard({
           <header><span><Upload /></span><div><h3>上傳行動證明</h3><p>送出後由管理員審核，核准才會發放綠點。</p></div></header>
           <div className="action-proof-selection"><span>已選擇</span><b>{selectedAction.title}</b><strong>核准後 +{selectedAction.points} 點</strong></div>
           <p className="action-proof-help">{selectedAction.help}</p>
-          <a className="action-proof-sample" href={`/documents/${selectedAction.sampleFile}`} target="_blank" rel="noreferrer"><FileCheck2 /><span><b>查看正式繳交文件範例</b><small>{selectedAction.sampleFile}・PDF</small></span><Download /></a>
-          <p className="action-proof-guidance"><BadgeCheck />範例均為正式文件版型；實際送件請上傳原始票證、帳單、發票或核發紀錄，不接受無關的一般照片。</p>
+          <p className="action-proof-guidance"><BadgeCheck />請上傳原始票證、帳單、發票或核發紀錄，不接受無關的一般照片。</p>
           <label className="action-proof-file">
             <Upload />
-            <span><b>{proofFile ? proofFile.name : "選擇正式證明檔案"}</b><small>優先使用 PDF；圖片僅限原始票證、帳單或核發證明，最大 10 MB</small></span>
-            <input key={fileInputKey} type="file" accept="image/*,application/pdf" onChange={(event) => setProofFile(event.target.files?.[0] ?? null)} required />
+            <span><b>{proofFile ? proofFile.name : "選擇正式證明檔案"}</b><small>僅接受 PDF、PNG、JPG、JPEG 或 HEIC，最大 10 MB</small></span>
+            <input key={fileInputKey} type="file" accept=".pdf,.png,.jpg,.jpeg,.heic,application/pdf,image/png,image/jpeg,image/heic" onChange={(event) => handleProofFileChange(event.target.files?.[0] ?? null)} required />
           </label>
+          {proofFileError && <div className="login-error" role="alert">{proofFileError}</div>}
           <label className="action-proof-note">補充說明（選填）<textarea rows={3} value={proofNote} onChange={(event) => setProofNote(event.target.value)} placeholder="例如：8 月 10 日於大安區合作店家使用環保杯" /></label>
           <button className="button button-primary action-proof-submit" type="submit" disabled={busy || !proofFile}>{busy ? "正在送出…" : "送出證明，等待審核"}<ArrowRight /></button>
           {actionSubmissions.length > 0 && <div className="action-submission-history">
@@ -4224,12 +4241,14 @@ function FarmerEvidencePage({
   const missingRequirements = farmerEvidenceRequirements.filter((requirement) => !records.some((record) => record.evidenceType === requirement.type));
   const [selectedType, setSelectedType] = useState<string>(farmerEvidenceRequirements[2].type);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState("");
   const [fileInputKey, setFileInputKey] = useState(0);
 
   useEffect(() => {
     if (missingRequirements.some((requirement) => requirement.type === selectedType)) return;
     setSelectedType(missingRequirements[0]?.type ?? "");
     setSelectedFile(null);
+    setFileError("");
   }, [missingRequirements, selectedType]);
 
   const selectedRequirement = missingRequirements.find((requirement) => requirement.type === selectedType) ?? missingRequirements[0];
@@ -4240,6 +4259,7 @@ function FarmerEvidencePage({
     const uploaded = await onUpload(selectedRequirement.title, selectedRequirement.type, selectedFile);
     if (!uploaded) return;
     setSelectedFile(null);
+    setFileError("");
     setFileInputKey((current) => current + 1);
   }
 
@@ -4256,8 +4276,19 @@ function FarmerEvidencePage({
       </Panel>
       <Panel className="span-5" title={missingRequirements.length > 0 ? "測試上傳永續證明" : "永續證明已齊全"} note={missingRequirements.length > 0 ? "請選擇一個尚未上傳的項目與正式文件" : "所有必要文件都已寫入後台紀錄"}>
         {selectedRequirement ? <form className="farmer-evidence-upload" onSubmit={submit}>
-          <label>尚未上傳項目<select value={selectedRequirement.type} onChange={(event) => { setSelectedType(event.target.value); setSelectedFile(null); setFileInputKey((current) => current + 1); }}>{missingRequirements.map((requirement) => <option value={requirement.type} key={requirement.type}>{requirement.title}</option>)}</select></label>
-          <div className="upload-box"><Upload /><b>{selectedFile?.name ?? "選擇 PDF 或圖片證明"}</b><small>{selectedRequirement.description}・檔案上限 10 MB</small><input key={fileInputKey} aria-label="選擇永續證明檔案" type="file" accept="application/pdf,image/*" onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)} /></div>
+          <label>尚未上傳項目<select value={selectedRequirement.type} onChange={(event) => { setSelectedType(event.target.value); setSelectedFile(null); setFileError(""); setFileInputKey((current) => current + 1); }}>{missingRequirements.map((requirement) => <option value={requirement.type} key={requirement.type}>{requirement.title}</option>)}</select></label>
+          <div className="upload-box"><Upload /><b>{selectedFile?.name ?? "選擇 PDF、PNG、JPG、JPEG 或 HEIC 證明"}</b><small>{selectedRequirement.description}・檔案上限 10 MB</small><input key={fileInputKey} aria-label="選擇永續證明檔案" type="file" accept=".pdf,.png,.jpg,.jpeg,.heic,application/pdf,image/png,image/jpeg,image/heic,image/heif" onChange={(event) => {
+            const file = event.target.files?.[0] ?? null;
+            const extension = file?.name.split(".").pop()?.toLowerCase();
+            if (file && !["pdf", "png", "jpg", "jpeg", "heic"].includes(extension ?? "")) {
+              setSelectedFile(null);
+              setFileError("格式不支援，請選擇 PDF、PNG、JPG、JPEG 或 HEIC 檔案。");
+              event.target.value = "";
+              return;
+            }
+            setSelectedFile(file);
+            setFileError("");
+          }} />{fileError && <small role="alert">{fileError}</small>}</div>
           <div className="receipt-box"><Row label="證明類別" value={selectedRequirement.title} /><Row label="目前狀態" value="尚未上傳" /><Row label="送出後狀態" value="等待平台審核" /></div>
           <button className="button button-primary button-block" type="submit" disabled={busy || !selectedFile}>{busy ? "正在上傳…" : "上傳並送交審核"}</button>
         </form> : <Success title="履歷完整度已達 100%" text="消費者可在商品與支持頁看見最新證明。"><button className="button button-primary" onClick={onFunding}>前往農業資源兌換</button></Success>}
