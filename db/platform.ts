@@ -1688,8 +1688,17 @@ export async function getPublicPlatformContent(db: DbBinding) {
   };
 }
 
+let schemaInitialization: Promise<void> | null = null;
+
 export async function getPlatformDb() {
   const db = await getDb();
-  await ensurePlatformSchema(db.$client as unknown as DbBinding);
+  // Schema creation and seed checks are expensive on D1. Each Worker isolate
+  // serves one deployment database, so initialize once and share in-flight work.
+  // Retry on failure instead of caching a rejected promise.
+  schemaInitialization ??= ensurePlatformSchema(db.$client as unknown as DbBinding).catch((error) => {
+    schemaInitialization = null;
+    throw error;
+  });
+  await schemaInitialization;
   return db.$client as unknown as DbBinding;
 }
