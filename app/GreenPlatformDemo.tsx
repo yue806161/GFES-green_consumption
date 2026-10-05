@@ -994,6 +994,20 @@ function Brand() {
   );
 }
 
+function AccountLoadingScreen() {
+  return (
+    <main className="account-loading-screen" role="status" aria-live="polite">
+      <div className="account-loading-card">
+        <Brand />
+        <div className="account-loading-indicator" aria-hidden="true"><Leaf /></div>
+        <h1>登入中，正在準備你的帳戶</h1>
+        <p>正在確認登入狀態並載入個人資料，請稍候。</p>
+        <div className="account-loading-progress" aria-hidden="true"><span /></div>
+      </div>
+    </main>
+  );
+}
+
 function ModalShell({
   title,
   onClose,
@@ -1072,6 +1086,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
   const [backendError, setBackendError] = useState("");
   const [backendBusy, setBackendBusy] = useState(false);
   const [accountLoading, setAccountLoading] = useState(initialSessionExpected);
+  const [googleLoginPending, setGoogleLoginPending] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const [sessionRestoreError, setSessionRestoreError] = useState("");
@@ -1235,6 +1250,14 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
     setToast(values.status === "published" ? "最新消息已推送到首頁與相關消費者" : "最新消息草稿已儲存");
     return true;
   }
+
+  useEffect(() => {
+    const resetAfterBackNavigation = (event: PageTransitionEvent) => {
+      if (event.persisted) setGoogleLoginPending(false);
+    };
+    window.addEventListener("pageshow", resetAfterBackNavigation);
+    return () => window.removeEventListener("pageshow", resetAfterBackNavigation);
+  }, []);
 
   useEffect(() => {
     void (async () => {
@@ -1835,7 +1858,8 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
             }
             const isLocalPreview = ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname);
             const authOrigin = isLocalPreview ? "https://gfes.pages.dev" : "";
-            window.location.assign(`${authOrigin}/api/auth/google?role=consumer`);
+            setGoogleLoginPending(true);
+            window.setTimeout(() => window.location.assign(`${authOrigin}/api/auth/google?role=consumer`), 80);
           }}
         />
       )}
@@ -1937,9 +1961,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
     </>
   );
 
-  if (accountLoading) {
-    return <div className="admin-loading" role="status" aria-live="polite"><Brand /><h1>正在載入您的專屬帳戶</h1><p>確認身分與個人資料後才會顯示功能頁面</p></div>;
-  }
+  if (accountLoading || googleLoginPending) return <AccountLoadingScreen />;
 
   if (sessionRestoreError) {
     return <div className="admin-loading" role="alert"><Brand /><h1>帳戶連線暫時中斷</h1><p>{sessionRestoreError}，系統不會因此將您登出。</p><button type="button" className="button button-primary" onClick={() => setSessionRestoreAttempt((attempt) => attempt + 1)}><RefreshCcw />重新連線</button></div>;
