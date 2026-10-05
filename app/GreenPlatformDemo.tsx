@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -1072,6 +1072,8 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
   const [backendError, setBackendError] = useState("");
   const [backendBusy, setBackendBusy] = useState(false);
   const [accountLoading, setAccountLoading] = useState(initialSessionExpected);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
   const [sessionRestoreError, setSessionRestoreError] = useState("");
   const [sessionRestoreAttempt, setSessionRestoreAttempt] = useState(0);
   const [loginError, setLoginError] = useState("");
@@ -1239,7 +1241,9 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
       if (initialSessionExpected) setAccountLoading(true);
       setSessionRestoreError("");
       try {
-        await refreshPublicContent();
+        // The dashboard does not use homepage content. Its database request
+        // must not delay or compete with session restoration after OAuth.
+        if (!initialSessionExpected) void refreshPublicContent();
         const params = new URLSearchParams(window.location.search);
         const oauthError = params.get("authError");
         const oauthRole = params.get("authRole") as LoginRole | null;
@@ -1269,6 +1273,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
         if (response.status === 401) {
           setCsrfToken("");
           setBackendState(null);
+          if (initialSessionExpected) void refreshPublicContent();
           if (initialPortal) {
             setLoginRole(initialPortal);
           }
@@ -1279,6 +1284,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
         if (initialPortal && session.role !== initialPortal) {
           setCsrfToken("");
           setLoginRole(initialPortal);
+          if (initialSessionExpected) void refreshPublicContent();
           setToast(`這是${loginRoles[initialPortal].label}專用入口；目前帳戶仍保持登入，請按「登入平台」切換角色。`);
           return;
         }
@@ -1297,7 +1303,23 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
         setAccountLoading(false);
       }
     })();
-  }, [initialPortal, sessionRestoreAttempt]);
+  }, [initialPortal, initialSessionExpected, sessionRestoreAttempt]);
+
+  useEffect(() => {
+    if (!accountMenuOpen) return;
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!accountMenuRef.current?.contains(event.target as Node)) setAccountMenuOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setAccountMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [accountMenuOpen]);
 
   useEffect(() => {
     if (!toast) return;
@@ -1580,6 +1602,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
   }
 
   async function backHome() {
+    setAccountMenuOpen(false);
     await fetch("/api/auth", { method: "DELETE", credentials: "same-origin", headers: { "x-gfes-role": requestRole } }).catch(() => undefined);
     setCsrfToken("");
     setBackendState(null);
@@ -1587,6 +1610,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
     setSessionRestoreError("");
     setAdminMode(false);
     setScreen("home");
+    void refreshPublicContent();
     if (initialPortal) {
       setLoginRole(initialPortal);
     }
@@ -2011,11 +2035,27 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
                               : "以下資料由平台後台統一管理"}</p>
               </div>
               <div className="dashboard-top-actions">
-                <button className="profile-button" onClick={openLogin}>
-                  <span className="avatar"><User /></span>
-                  <span>{signedInDisplayName ?? roles[role].account}</span>
-                  <ChevronRight />
-                </button>
+                <div className="profile-menu-anchor" ref={accountMenuRef}>
+                  <button
+                    className="profile-button"
+                    type="button"
+                    aria-label="帳戶選單"
+                    aria-expanded={accountMenuOpen}
+                    aria-controls="profile-menu"
+                    onClick={() => setAccountMenuOpen((open) => !open)}
+                  >
+                    <span className="avatar"><User /></span>
+                    <span>{signedInDisplayName ?? roles[role].account}</span>
+                    <ChevronRight aria-hidden="true" />
+                  </button>
+                  {accountMenuOpen && (
+                    <div className="profile-menu" id="profile-menu" role="group" aria-label="帳戶選單">
+                      <span>目前登入</span>
+                      <strong>{signedInDisplayName ?? roles[role].account}</strong>
+                      <button type="button" onClick={() => void backHome()}><LogOut aria-hidden="true" />登出帳號</button>
+                    </div>
+                  )}
+                </div>
               </div>
             </header>
 

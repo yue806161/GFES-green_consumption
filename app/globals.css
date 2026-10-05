@@ -779,6 +779,39 @@ img { display: block; max-width: 100%; }
   cursor: pointer;
 }
 .profile-button svg { width: 16px; }
+.profile-menu-anchor { position: relative; }
+.profile-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  right: 0;
+  width: max(220px, 100%);
+  padding: 14px;
+  display: grid;
+  gap: 5px;
+  color: var(--forest-900);
+  border: 1px solid rgb(31 91 65 / .14);
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 16px 36px rgb(21 54 38 / .16);
+}
+.profile-menu > span { color: var(--muted); font-size: 12px; }
+.profile-menu > strong { overflow-wrap: anywhere; }
+.profile-menu button {
+  margin-top: 7px;
+  padding: 11px 4px 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--forest-900);
+  border: 0;
+  border-top: 1px solid rgb(31 91 65 / .12);
+  background: none;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.profile-menu button svg { width: 17px; height: 17px; }
 .avatar { width: 34px; height: 34px; display: grid; place-items: center; color: white; border-radius: 11px; background: var(--forest-700); }
 .dashboard-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; }
 .span-12 { grid-column: span 12; }
@@ -1986,6 +2019,7 @@ td svg { width: 17px; }
   .dashboard-shell .dashboard-top-actions { width: 100%; justify-content: space-between; }
   .dashboard-shell .profile-button { min-width: 46px; padding-right: 8px; }
   .dashboard-shell .profile-button > span:not(.avatar) { display: none; }
+  .dashboard-shell .profile-menu { right: auto; left: 0; }
   .dashboard-shell .dashboard-grid { gap: 12px; }
   .dashboard-shell .span-4,
   .dashboard-shell .span-5,
