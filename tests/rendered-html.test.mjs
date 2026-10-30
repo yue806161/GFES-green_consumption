@@ -96,6 +96,15 @@ test("keeps the completed platform and consumer journeys wired", async () => {
   assert.match(registerRoute, /role === "consumer"/);
   assert.match(registerRoute, /consumerSignupBonusSourceId\(profileId\)/);
   assert.match(registerRoute, /signupBonusPoints: CONSUMER_SIGNUP_BONUS_POINTS/);
+  assert.match(registerRoute, /MIN_FORM_FILL_MS/);
+  assert.match(registerRoute, /honeypot\.length > 0/);
+  assert.match(demo, /registration-honeypot/);
+  assert.match(demo, /綠點使用規則/);
+  assert.match(demo, /function FarmerProfilePage/);
+  assert.match(demo, /數位經營履歷/);
+  assert.match(demo, /id="farmer-standard"/);
+  assert.match(demo, /id="roadmap"/);
+  assert.match(demo, /id="point-rules"/);
   assert.match(googleCallbackRoute, /isNewConsumerAccount = true/);
   assert.match(googleCallbackRoute, /signupBonus.*CONSUMER_SIGNUP_BONUS_POINTS/);
   assert.match(demo, /新戶註冊贈 500 點/);

@@ -58,7 +58,7 @@ import farmerImageLibrary from "./data/farmerImageLibrary.json";
 type Role = "consumer" | "farmer" | "institution";
 export type LoginRole = Role | "admin";
 type ConsumerPage = "overview" | "local" | "invoice" | "receipt" | "orders" | "settings";
-type FarmerPage = "overview" | "content" | "products" | "projects" | "evidence" | "funding";
+type FarmerPage = "overview" | "content" | "products" | "projects" | "evidence" | "funding" | "profile";
 type InstitutionPage = "overview" | "portfolio" | "resource" | "report";
 
 const portalPaths: Record<LoginRole, string> = {
@@ -68,7 +68,7 @@ const portalPaths: Record<LoginRole, string> = {
   admin: "/admin",
 };
 const consumerPages: ConsumerPage[] = ["overview", "local", "invoice", "receipt", "orders", "settings"];
-const farmerPages: FarmerPage[] = ["overview", "content", "products", "projects", "evidence", "funding"];
+const farmerPages: FarmerPage[] = ["overview", "content", "products", "projects", "evidence", "funding", "profile"];
 const institutionPages: InstitutionPage[] = ["overview", "portfolio", "resource", "report"];
 
 function readPortalSection(role: Role, search: string) {
@@ -77,6 +77,8 @@ function readPortalSection(role: Role, search: string) {
   if (role === "farmer") return farmerPages.includes(section as FarmerPage) ? section as FarmerPage : "overview";
   return institutionPages.includes(section as InstitutionPage) ? section as InstitutionPage : "overview";
 }
+type RegistrationGuard = { website: string; elapsedMs: number };
+
 type ShippingDetails = {
   recipientName: string;
   recipientPhone: string;
@@ -985,6 +987,28 @@ const heroSlides = [
   },
 ] as const;
 
+const farmerStandards = [
+  { title: "實際從事農業生產", text: "申請者本人或家庭成員直接從事耕作，非僅從事農產品轉售的盤商或通路。", proof: "佐證：農保投保證明、農民身分證明或農會會員資料" },
+  { title: "小規模家庭經營", text: "以家庭勞動力為主，經營面積以 2 公頃以下為原則，避免大型農企業占用在地支持資源。", proof: "佐證：耕地或租賃證明、農業經營面積資料" },
+  { title: "友善或可追溯生產", text: "具產銷履歷、有機或友善耕作登錄，或同意上傳無農藥檢測與耕作紀錄。", proof: "佐證：產銷履歷編號、檢驗報告、友善耕作登錄資料" },
+  { title: "位於合作服務區域", text: "第一階段以雲林、嘉義、台南合作農會轄區為主，便於實地查核與資源履約。", proof: "佐證：農場地址與合作農會推薦" },
+];
+
+const roadmapPhases = [
+  { stage: "第一階段", title: "場域驗證", goal: "於雲嘉南地區與合作農會、小農驗證綠點循環。", items: ["招募首批合作小農與消費者", "驗證行動證明審核與綠點兌換流程", "建立數位經營履歷資料格式"], revenue: "收益：小農商品兌換服務費、計畫導入費", current: true },
+  { stage: "第二階段", title: "市場擴張", goal: "擴大企業、政府綠點激勵計畫與永續採購。", items: ["企業 ESG 與員工福利綠點計畫", "地方政府淨零與地方創生合作", "永續採購媒合與成果報告"], revenue: "收益：激勵計畫管理費、ESG 成果報告服務", current: false },
+  { stage: "第三階段", title: "金融深化", goal: "讓數位經營履歷成為小農取得金融服務的參考。", items: ["經小農授權提供經營履歷給金融機構參考", "與金融機構洽談普惠金融服務合作", "點數流向與成果資料的稽核機制"], revenue: "收益：金融機構資料服務與轉介合作", current: false },
+];
+
+const pointRules = [
+  { title: "來源透明", text: "綠點由合作企業、政府計畫或商家以既有預算支應發行，平台記錄每一點的發行單位與預算來源。" },
+  { title: "不可兌現、不可轉讓", text: "綠點不得兌換現金、不得於使用者之間轉讓或買賣，僅能用於支持小農專案或兌換平台商品與資源。" },
+  { title: "審核後入帳", text: "行動證明需經平台審核後入帳；證明不實、重複申請或違反規則者，平台得撤回已發放綠點。" },
+  { title: "有效期限", text: "綠點自取得日起 12 個月內有效（草案），到期前於帳戶內提醒，避免點數長期累積成為負債。" },
+  { title: "小農綠點用途", text: "小農收到的綠點僅能向合作農會兌換農具、檢測、輔導或補助資源，由承辦單位負責履約。" },
+  { title: "個資保護", text: "僅蒐集發放綠點與配送所需資料；提供數位經營履歷給金融機構前，須取得小農書面同意。" },
+];
+
 function Brand() {
   return (
     <span className="brand">
@@ -1583,7 +1607,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
     window.scrollTo({ top: 0 });
   }
 
-  async function registerAccount(displayName: string, username: string, email: string, password: string) {
+  async function registerAccount(displayName: string, username: string, email: string, password: string, guard: RegistrationGuard) {
     if (loginRole === "admin") {
       setLoginError("平台管理員帳號不開放自行註冊。");
       return;
@@ -1596,7 +1620,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
         method: "POST",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ role: loginRole, displayName, username, email, password }),
+        body: JSON.stringify({ role: loginRole, displayName, username, email, password, website: guard.website, elapsedMs: guard.elapsedMs }),
       });
       const result = await response.json() as { error?: string; csrfToken?: string; role?: LoginRole; pendingApproval?: boolean; message?: string; estimatedReviewTime?: string; signupBonusPoints?: number };
       if (!response.ok || !result.role) throw new Error(result.error || "註冊失敗");
@@ -2006,6 +2030,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
                   <button className={farmerPage === "projects" ? "active" : ""} onClick={() => setFarmerPage("projects")}><HeartHandshake />小農改善專案</button>
                   <button className={farmerPage === "evidence" ? "active" : ""} onClick={() => setFarmerPage("evidence")}><Upload />永續證明</button>
                   <button className={farmerPage === "funding" ? "active" : ""} onClick={() => setFarmerPage("funding")}><PackageCheck />農業資源兌換</button>
+                  <button className={farmerPage === "profile" ? "active" : ""} onClick={() => setFarmerPage("profile")}><TrendingUp />數位經營履歷</button>
                 </>
               )}
               {role === "institution" && (
@@ -2026,7 +2051,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
                 <h1>{role === "consumer"
                   ? ({ overview: "消費者中心", local: `用綠點支持在地｜您的所在地：${backendState ? `${backendState.consumer.city}${backendState.consumer.district}` : "台北市大安區"}`, invoice: "回傳消費證明", receipt: "影響力收據", orders: "兌換訂單", settings: "帳戶設定" } as const)[consumerPage]
                   : role === "farmer"
-                    ? ({ overview: "小農中心", content: "農場故事與最新消息", products: "商品數量與點數", projects: "小農改善專案", evidence: "永續證明", funding: "農業資源兌換" } as const)[farmerPage]
+                    ? ({ overview: "小農中心", content: "農場故事與最新消息", products: "商品數量與點數", projects: "小農改善專案", evidence: "永續證明", funding: "農業資源兌換", profile: "數位經營履歷" } as const)[farmerPage]
                     : ({ overview: "銀行／政府／企業中心", portfolio: "綠點激勵計畫", resource: "農業資源履約管理", report: "ESG 影響力報告" } as const)[institutionPage]}</h1>
                 <p>{role === "consumer" && consumerPage === "local"
                   ? "選擇支持改善專案或兌換小農好物，讓綠點回到土地"
@@ -2048,6 +2073,8 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
                         ? "管理農產履歷、無農藥檢測與友善耕作紀錄"
                         : role === "farmer" && farmerPage === "funding"
                           ? "使用收到的綠點向合作農會兌換農具、檢測、輔導與補助"
+                          : role === "farmer" && farmerPage === "profile"
+                            ? "把訂單、證明與成果紀錄整理成可提供金融機構參考的經營履歷"
                           : role === "institution" && institutionPage === "portfolio"
                             ? "建立綠點激勵任務，追蹤參與、點數流向與地方效益"
                             : role === "institution" && institutionPage === "resource"
@@ -2217,6 +2244,19 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
                 }}
               />
             )}
+            {role === "farmer" && farmerPage === "profile" && (
+              <FarmerProfilePage
+                farmerName={backendState?.farmer.displayName ?? roles.farmer.account}
+                location={backendState ? `${backendState.farmer.city}${backendState.farmer.district}` : "雲林縣斗六市"}
+                farmerPoints={farmerPoints}
+                products={farmerProducts}
+                orders={backendState?.orders ?? []}
+                evidence={backendState?.evidence ?? []}
+                projects={managedFarmerProjects}
+                outcomes={backendState?.outcomeReports ?? []}
+                redemptions={backendState?.resourceRedemptions ?? []}
+              />
+            )}
             {role === "institution" && institutionPage === "overview" && (
               <InstitutionDashboard
                 programs={incentivePlans}
@@ -2279,6 +2319,7 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
               <button className={farmerPage === "projects" ? "active" : ""} onClick={() => setFarmerPage("projects")}><HeartHandshake />改善</button>
               <button className={farmerPage === "evidence" ? "active" : ""} onClick={() => setFarmerPage("evidence")}><Upload />證明</button>
               <button className={farmerPage === "funding" ? "active" : ""} onClick={() => setFarmerPage("funding")}><PackageCheck />資源</button>
+              <button className={farmerPage === "profile" ? "active" : ""} onClick={() => setFarmerPage("profile")}><TrendingUp />履歷</button>
             </>
           )}
           {role === "institution" && (
@@ -2305,6 +2346,8 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
           <div className="nav-links">
             <a href="#stories">在地行動</a>
             <a href="#cycle">運作方式</a>
+            <a href="#farmer-standard">小農認定</a>
+            <a href="#roadmap">發展藍圖</a>
             <a href="#impact">社會影響</a>
           </div>
           <button className="button button-primary" onClick={openLogin}><User />登入平台</button>
@@ -2416,6 +2459,46 @@ export function GreenPlatformApp({ initialPortal, initialSessionExpected = false
               </button>
             </header>
             {cycleOpen && <RoleCycleExplorer />}
+          </div>
+        </section>
+
+        <section className="section section-soft" id="farmer-standard">
+          <div className="container">
+            <header className="section-heading">
+              <span className="eyebrow">合作小農認定標準</span>
+              <h2>平台上的「小農」是誰？</h2>
+              <p>依評審建議訂定平台認定依據。法規並未統一定義「小農」，本平台以《農業發展條例》對農民「直接從事農業生產之自然人」的定義為基礎，再加上經營規模與友善生產條件。</p>
+            </header>
+            <div className="standard-grid">
+              {farmerStandards.map((item, index) => <article key={item.title}><span>{String(index + 1).padStart(2, "0")}</span><h3>{item.title}</h3><p>{item.text}</p><small>{item.proof}</small></article>)}
+            </div>
+            <p className="standard-note">以上為平台草案標準；經營面積門檻與佐證文件將於場域驗證階段與合作農會確認後定案，申請合作小農帳號時由管理員依此審核。</p>
+          </div>
+        </section>
+
+        <section className="section roadmap-section" id="roadmap">
+          <div className="container">
+            <header className="section-heading">
+              <span className="eyebrow">三階段發展藍圖</span>
+              <h2>從雲嘉南場域驗證，走向綠色金融</h2>
+              <p>先在小範圍驗證綠點循環，再擴大企業 ESG 合作，最後讓累積的數位經營履歷成為小農取得金融服務的參考依據。</p>
+            </header>
+            <ol className="roadmap-grid">
+              {roadmapPhases.map((phase) => <li key={phase.stage} className={phase.current ? "current" : ""}><small>{phase.stage}{phase.current ? "・目前階段" : ""}</small><h3>{phase.title}</h3><p>{phase.goal}</p><ul>{phase.items.map((item) => <li key={item}>{item}</li>)}</ul><em>{phase.revenue}</em></li>)}
+            </ol>
+          </div>
+        </section>
+
+        <section className="section section-soft" id="point-rules">
+          <div className="container">
+            <header className="section-heading">
+              <span className="eyebrow">綠點使用規則</span>
+              <h2>綠點怎麼發、怎麼用，一次說清楚</h2>
+              <p>綠點設計為不可兌現、不可轉讓的行動回饋點數，每一點都記錄來源與流向。以下為平台規則草案，正式上線前將再經法律意見確認。</p>
+            </header>
+            <div className="rule-grid">
+              {pointRules.map((rule) => <article key={rule.title}><h3>{rule.title}</h3><p>{rule.text}</p></article>)}
+            </div>
           </div>
         </section>
 
@@ -3074,7 +3157,7 @@ function LoginModal({
   onClose: () => void;
   onDismissRegistrationNotice: () => void;
   onEnter: (email: string, password: string) => void;
-  onRegister: (displayName: string, username: string, email: string, password: string) => void;
+  onRegister: (displayName: string, username: string, email: string, password: string, guard: RegistrationGuard) => void;
   onGoogleLogin: (role: Role) => void;
 }) {
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -3085,6 +3168,9 @@ function LoginModal({
   const [username, setUsername] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [localError, setLocalError] = useState("");
+  const [agreedRules, setAgreedRules] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
+  const registerOpenedAt = useRef(0);
 
   useEffect(() => {
     setEmail("");
@@ -3107,6 +3193,8 @@ function LoginModal({
       setUsername("");
       setPassword("");
       setConfirmPassword("");
+      setAgreedRules(false);
+      registerOpenedAt.current = Date.now();
     }
   }
 
@@ -3116,8 +3204,12 @@ function LoginModal({
       setLocalError("兩次輸入的密碼不一致。");
       return;
     }
+    if (!agreedRules) {
+      setLocalError("請先閱讀並同意綠點使用規則與個人資料告知。");
+      return;
+    }
     setLocalError("");
-    onRegister(role === "consumer" ? username : displayName, username, email, password);
+    onRegister(role === "consumer" ? username : displayName, username, email, password, { website: honeypot, elapsedMs: Date.now() - registerOpenedAt.current });
   }
 
   return (
@@ -3178,6 +3270,8 @@ function LoginModal({
               <label>電子信箱<input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" required /></label>
               <label>密碼<div className="password-field"><input type={showPassword ? "text" : "password"} autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={8} maxLength={72} placeholder="至少 8 個字元" required /><button type="button" onClick={() => setShowPassword((current) => !current)}>{showPassword ? "隱藏" : "顯示"}</button></div></label>
               <label>再次輸入密碼<input type={showPassword ? "text" : "password"} autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} minLength={8} maxLength={72} required /></label>
+              <label className="registration-honeypot" aria-hidden="true">網站<input type="text" tabIndex={-1} autoComplete="off" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} /></label>
+              <label className="registration-consent"><input type="checkbox" checked={agreedRules} onChange={(event) => setAgreedRules(event.target.checked)} required /><span>我已閱讀並同意<a href="/#point-rules" target="_blank" rel="noreferrer">綠點使用規則</a>與個人資料告知{role === "farmer" ? "，並確認符合合作小農認定標準" : ""}</span></label>
               {(localError || error) && <div className="login-error" role="alert">{localError || error}</div>}
               <button className="button button-primary button-block" type="submit" disabled={busy}>建立{loginRoles[role].label}帳號<ArrowRight /></button>
             </form>
@@ -4394,6 +4488,105 @@ function FarmerFundingPage({
         return <article key={redemption.id}><header><div><small>{redemption.id}</small><h3>{redemption.resourceName}</h3><p>{redemption.cooperative}・{new Date(redemption.createdAt).toLocaleDateString("zh-TW")}</p></div><span className={`status-pill ${stage < 2 ? "waiting" : ""}`}>{steps[stage]}</span></header><div className="resource-redemption-summary"><p><small>扣抵綠點</small><b>{redemption.points.toLocaleString()} 點</b></p><p><small>{redemption.fulfillmentType === "delivery" ? "配送地址" : "預約時間"}</small><b>{redemption.fulfillmentType === "delivery" ? redemption.deliveryAddress : `${redemption.appointmentDate} ${redemption.appointmentSlot}`}</b></p><p><small>{redemption.fulfillmentType === "delivery" ? "物流單號" : "聯絡窗口"}</small><b>{redemption.fulfillmentType === "delivery" ? redemption.trackingNumber || "農會確認後提供" : `${redemption.contactName}・${redemption.contactPhone}`}</b></p></div><div className="resource-progress">{steps.map((label, index) => <div key={label} className={index < stage ? "done" : index === stage ? "active" : ""}><span>{index < stage ? <Check /> : index + 1}</span><b>{label}</b></div>)}</div>{changeRequest && <div className={`change-request-status ${changeRequest.status}`}><b>{changeRequest.status === "pending" ? "修改申請待承辦端確認" : changeRequest.status === "approved" ? "修改申請已核准" : "修改申請已退回"}</b><span>{changeRequest.reasonDetail}</span>{changeRequest.reviewNote && <small>回覆：{changeRequest.reviewNote}</small>}</div>}<div className="resource-redemption-actions"><button className="button button-secondary" onClick={() => onReceipt(redemption.id)}><Receipt />查看兌換收據</button><button className="button button-secondary" disabled={stage >= 2 || changeRequest?.status === "pending"} onClick={() => setChangeRedemption(redemption)}>{changeRequest?.status === "pending" ? "修改申請待確認" : stage >= 2 ? "履約後不可修改" : "申請修改兌換"}</button><span className="read-only-progress"><LockKeyhole />履約進度由銀行／政府／企業承辦端更新</span></div></article>;
       })}</div>}
     </Panel>{changeRedemption && <ResourceChangeRequestModal redemption={changeRedemption} onClose={() => setChangeRedemption(null)} onSubmit={async (values) => { const success = await onRequestChange(values); if (success) setChangeRedemption(null); return success; }} />}</div>
+  );
+}
+
+function FarmerProfilePage({
+  farmerName,
+  location,
+  farmerPoints,
+  products,
+  orders,
+  evidence,
+  projects,
+  outcomes,
+  redemptions,
+}: {
+  farmerName: string;
+  location: string;
+  farmerPoints: number;
+  products: FarmerProduct[];
+  orders: BackendSnapshot["orders"];
+  evidence: BackendSnapshot["evidence"];
+  projects: LocalProject[];
+  outcomes: BackendSnapshot["outcomeReports"];
+  redemptions: BackendSnapshot["resourceRedemptions"];
+}) {
+  const orderPoints = orders.reduce((sum, order) => sum + order.points * order.quantity, 0);
+  const projectPoints = projects.reduce((sum, project) => sum + Number(project.raisedPoints ?? 0), 0);
+  const supporters = projects.reduce((sum, project) => sum + Number(project.supporters ?? 0), 0);
+  const completedOrders = orders.filter((order) => order.stage >= 3).length;
+  const fulfillmentRate = orders.length ? Math.round((completedOrders / orders.length) * 100) : 0;
+  const coveredEvidence = farmerEvidenceRequirements.filter((requirement) => evidence.some((record) => record.evidenceType === requirement.type)).length;
+  const verifiedEvidence = evidence.filter((record) => record.status === "verified").length;
+  const resourcePoints = redemptions.reduce((sum, item) => sum + item.points, 0);
+  const verifiedOutcomes = outcomes.filter((report) => report.status === "verified");
+  const carbonKg = verifiedOutcomes.reduce((sum, report) => sum + Number(report.carbonKg ?? 0), 0);
+  const waterLiters = verifiedOutcomes.reduce((sum, report) => sum + Number(report.waterLiters ?? 0), 0);
+
+  const timeline = [
+    ...orders.map((order) => ({ at: order.createdAt, type: "銷售", title: `兌換訂單成立：${order.title}`, note: `${order.quantity} 件・${(order.points * order.quantity).toLocaleString()} 點` })),
+    ...orders.filter((order) => order.shippedAt).map((order) => ({ at: order.shippedAt, type: "出貨", title: `完成出貨：${order.title}`, note: order.carrier ? `${order.carrier}・${order.trackingNumber}` : "產地配送" })),
+    ...evidence.map((record) => ({ at: record.submittedAt, type: "證明", title: `上傳${record.title}`, note: record.status === "verified" ? "已驗證" : "等待審核" })),
+    ...redemptions.map((item) => ({ at: item.createdAt, type: "投入", title: `兌換農業資源：${item.resourceName}`, note: `${item.cooperative}・${item.points.toLocaleString()} 點` })),
+    ...outcomes.map((report) => ({ at: report.submittedAt, type: "成果", title: `提交改善成果：${projects.find((project) => project.id === report.projectId)?.title ?? report.projectId}`, note: report.status === "verified" ? "已通過機構審核" : "等待機構審核" })),
+  ].filter((item) => item.at).sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()).slice(0, 12);
+
+  const profileRows = [
+    { area: "經營穩定度", value: `${orders.length} 筆訂單・履約完成率 ${fulfillmentRate}%`, source: "平台兌換訂單與出貨紀錄", use: "評估銷售通路與出貨紀律" },
+    { area: "市場支持度", value: `${(orderPoints + projectPoints).toLocaleString()} 點・${supporters} 人次支持`, source: "訂單與改善專案綠點流入", use: "評估在地需求與現金流來源" },
+    { area: "生產合規性", value: `${coveredEvidence}／${farmerEvidenceRequirements.length} 項證明・${verifiedEvidence} 項已驗證`, source: "產銷履歷、檢測與耕作紀錄", use: "評估食安與經營風險" },
+    { area: "綠色轉型投入", value: `${redemptions.length} 筆資源兌換・${resourcePoints.toLocaleString()} 點`, source: "農會農業資源兌換紀錄", use: "了解綠色轉型的資源用途" },
+    { area: "環境成果", value: `減碳 ${(carbonKg / 1000).toLocaleString()} 噸・節水 ${waterLiters.toLocaleString()} 公升`, source: "經機構審核的成果回報", use: "追蹤改善計畫的環境成效" },
+  ];
+
+  function downloadProfile() {
+    const csvRow = (cells: string[]) => cells.map((cell) => `"${cell.replaceAll("\"", "\"\"")}"`).join(",");
+    const content = [
+      csvRow(["GFES 數位經營履歷", farmerName, location, `產出時間 ${new Date().toLocaleString("zh-TW")}`]),
+      csvRow(["綠點餘額", `${farmerPoints.toLocaleString()} 點`, "上架商品", `${products.length} 項`]),
+      "",
+      csvRow(["資料面向", "本帳戶紀錄", "資料來源", "參考用途"]),
+      ...profileRows.map((row) => csvRow([row.area, row.value, row.source, row.use])),
+      "",
+      csvRow(["日期", "類別", "紀錄", "說明"]),
+      ...timeline.map((item) => csvRow([new Date(item.at).toLocaleDateString("zh-TW"), item.type, item.title, item.note])),
+      "",
+      csvRow(["聲明", "本資料為 GFES 平台紀錄彙整，僅供經營狀況參考，不代表任何機構的審查結果。"]),
+    ].join("\n");
+    // Prefix a UTF-8 BOM so Excel opens the Chinese columns correctly.
+    const url = URL.createObjectURL(new Blob(["\uFEFF", content], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `GFES-${farmerName}-數位經營履歷.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <>
+      <div className="metrics">
+        <Metric icon={HandCoins} value={`${(orderPoints + projectPoints).toLocaleString()} 點`} label="累計綠點流入" delta={`${orders.length} 筆訂單・${projects.length} 項專案`} />
+        <Metric icon={Truck} value={`${fulfillmentRate}%`} label="訂單履約完成率" delta={`${completedOrders}／${orders.length} 筆完成`} />
+        <Metric icon={FileCheck2} value={`${coveredEvidence}／${farmerEvidenceRequirements.length}`} label="永續證明完整度" delta={`${verifiedEvidence} 項已驗證`} />
+        <Metric icon={Sprout} value={`${resourcePoints.toLocaleString()} 點`} label="綠色轉型投入" delta={`${redemptions.length} 筆農會資源`} />
+      </div>
+      <div className="dashboard-grid">
+        <Panel className="span-12 subpage-primary" title="數位經營履歷摘要" note={`${farmerName}・${location}｜依平台交易、證明與成果紀錄自動彙整`} action={<button className="button button-primary" onClick={downloadProfile}><Download />下載經營履歷（CSV）</button>}>
+          <div className="table-wrap"><table className="mobile-card-table profile-table"><thead><tr><th>資料面向</th><th>本帳戶紀錄</th><th>資料來源</th><th>金融機構參考用途</th></tr></thead><tbody>{profileRows.map((row) => <tr key={row.area}><td>{row.area}</td><td>{row.value}</td><td>{row.source}</td><td>{row.use}</td></tr>)}</tbody></table></div>
+        </Panel>
+        <Panel className="span-7" title="經營紀錄時間軸" note="最近 12 筆銷售、出貨、證明、資源投入與成果紀錄">
+          {timeline.length === 0 ? <div className="empty-receipt"><span><FileCheck2 /></span><h3>尚無經營紀錄</h3><p>完成第一筆訂單出貨或上傳證明後，這裡會開始累積履歷。</p></div> : <ol className="profile-timeline">{timeline.map((item, index) => <li key={`${item.type}-${item.at}-${index}`}><span className="profile-timeline-tag">{item.type}</span><div><b>{item.title}</b><small>{new Date(item.at).toLocaleDateString("zh-TW")}・{item.note}</small></div></li>)}</ol>}
+        </Panel>
+        <Panel className="span-5" title="提供金融機構使用說明" note="作為金融機構了解小農經營狀況的參考資料">
+          <div className="report-highlights">
+            <div><span><LockKeyhole /></span><p><b>小農自主授權</b><small>履歷由小農下載後自行提供，或經書面同意後由平台提供給指定金融機構，並依個人資料保護法告知蒐集目的。</small></p></div>
+            <div><span><BadgeCheck /></span><p><b>資料可追溯</b><small>每一項數據都對應平台訂單、點數帳本、證明文件或機構審核紀錄。</small></p></div>
+            <div><span><Building2 /></span><p><b>僅供參考，不取代審查</b><small>本履歷只彙整平台紀錄，不對小農進行評等；金融機構仍依其內部規範自行審查。</small></p></div>
+          </div>
+        </Panel>
+      </div>
+    </>
   );
 }
 
