@@ -8,6 +8,7 @@ import {
   consumerSignupBonusSourceId,
 } from "../../../db/rewards";
 
+const MIN_FORM_FILL_MS = 2500;
 const registrationRoles = new Set<PlatformRole>(["consumer", "farmer", "institution"]);
 const defaultLocation: Record<Exclude<PlatformRole, "admin">, { city: string; district: string }> = {
   consumer: { city: "台北市", district: "大安區" },
@@ -23,6 +24,12 @@ export async function POST(request: Request) {
     const username = String(body.username ?? "").trim().toLowerCase();
     const email = String(body.email ?? "").trim().toLowerCase();
     const password = String(body.password ?? "");
+    // Bot guard: real users never fill the hidden field and take more than a few seconds to complete the form.
+    const honeypot = String(body.website ?? "");
+    const elapsedMs = Number(body.elapsedMs ?? 0);
+    if (honeypot.length > 0 || !Number.isFinite(elapsedMs) || elapsedMs < MIN_FORM_FILL_MS) {
+      return Response.json({ error: "系統偵測到異常的註冊行為，請重新整理頁面後再試一次。" }, { status: 429 });
+    }
     if (!registrationRoles.has(role) || displayName.length < 2 || displayName.length > 60) {
       return Response.json({ error: "請選擇可註冊的角色，並輸入 2 至 60 字的名稱。" }, { status: 400 });
     }

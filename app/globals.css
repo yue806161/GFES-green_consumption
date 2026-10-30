@@ -1827,7 +1827,7 @@ td svg { width: 17px; }
 @media (max-width: 780px) {
   .login-photo { height: 210px; min-height: 210px; }
   .role-option { height: auto; min-height: 82px; }
-  .mobile-nav-farmer { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .mobile-nav-farmer { grid-template-columns: repeat(8, minmax(0, 1fr)); }
   .mobile-nav-farmer button { min-width: 0; padding-inline: 2px; font-size: 11px; }
 }
 @media (max-width: 480px) {
@@ -2153,8 +2153,8 @@ td svg { width: 17px; }
   .dashboard-shell .mobile-card-table td::before { color: var(--muted); font-size: 12px; font-weight: 900; text-align: left; }
   .dashboard-shell .mobile-card-table td > * { justify-self: end; }
   .dashboard-shell .mobile-nav { inset: auto 12px 12px; padding: 7px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .dashboard-shell .mobile-nav-consumer,
-  .dashboard-shell .mobile-nav-farmer { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .dashboard-shell .mobile-nav-consumer { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .dashboard-shell .mobile-nav-farmer { grid-template-columns: repeat(8, minmax(0, 1fr)); }
   .dashboard-shell .mobile-nav-institution { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .dashboard-shell .mobile-nav button { min-height: 54px; padding: 3px; font-size: 11px; }
   .dashboard-shell .modal-backdrop { padding: 10px; }
@@ -2472,4 +2472,43 @@ td svg { width: 17px; }
   .action-submission-history article { grid-template-columns: 1fr auto; }
   .action-submission-history .submission-status { justify-self: start; }
   .action-submission-history article > div { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* Farmer standards, roadmap and point rules */
+.standard-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.standard-grid article { padding: 22px; display: grid; align-content: start; gap: 10px; border: 1px solid rgb(31 91 65 / .12); border-radius: 18px; background: white; }
+.standard-grid article > span { color: var(--forest-700); font-size: 14px; font-weight: 800; letter-spacing: .08em; }
+.standard-grid h3, .rule-grid h3, .roadmap-grid h3 { margin: 0; color: var(--forest-950); font-size: 20px; }
+.standard-grid p, .rule-grid p, .roadmap-grid p { margin: 0; color: var(--muted); line-height: 1.7; }
+.standard-grid small { color: var(--forest-700); font-size: 14px; line-height: 1.6; }
+.standard-note { margin: 18px 0 0; color: var(--muted); font-size: 15px; }
+.roadmap-grid { margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; list-style: none; }
+.roadmap-grid > li { padding: 24px; display: grid; align-content: start; gap: 12px; border: 1px solid rgb(31 91 65 / .12); border-radius: 18px; background: #f7faf5; }
+.roadmap-grid > li.current { border-color: var(--forest-700); background: white; box-shadow: 0 12px 30px rgb(31 91 65 / .1); }
+.roadmap-grid > li > small { color: var(--forest-700); font-weight: 800; }
+.roadmap-grid ul { margin: 0; padding-left: 18px; color: var(--ink); line-height: 1.8; }
+.roadmap-grid em { color: var(--forest-700); font-size: 14px; font-style: normal; font-weight: 700; }
+.rule-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.rule-grid article { padding: 20px; display: grid; gap: 8px; border-left: 4px solid var(--forest-700); border-radius: 12px; background: white; }
+.registration-honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.registration-consent { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; line-height: 1.6; }
+.registration-consent input { margin-top: 4px; flex: none; }
+.registration-consent a { color: var(--forest-700); font-weight: 700; }
+.profile-timeline { margin: 0; padding: 0; display: grid; gap: 10px; list-style: none; }
+.profile-timeline li { padding: 12px 14px; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; border-radius: 12px; background: #f1f6ed; }
+.profile-timeline li > div { display: grid; gap: 3px; min-width: 0; }
+.profile-timeline small { color: var(--muted); }
+.profile-timeline-tag { padding: 4px 10px; color: var(--forest-700); font-size: 13px; font-weight: 800; border-radius: 999px; background: white; }
+@media (max-width: 960px) {
+  .standard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .roadmap-grid, .rule-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .standard-grid { grid-template-columns: 1fr; }
+}
+@container dashboard-shell (max-width: 780px) {
+  .profile-table td:nth-child(1)::before { content: "資料面向"; }
+  .profile-table td:nth-child(2)::before { content: "本帳戶紀錄"; }
+  .profile-table td:nth-child(3)::before { content: "資料來源"; }
+  .profile-table td:nth-child(4)::before { content: "參考用途"; }
 }

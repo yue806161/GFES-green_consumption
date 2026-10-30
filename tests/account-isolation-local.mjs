@@ -9,7 +9,7 @@ async function register(role, label) {
   const response = await fetch(`${baseUrl}/api/register`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ role, displayName: `${label} 專屬帳戶`, username, email, password: "12345678" }),
+    body: JSON.stringify({ role, displayName: `${label} 專屬帳戶`, username, email, password: "12345678", website: "", elapsedMs: 5000 }),
   });
   const data = await response.json();
   assert.equal(response.status, 201, JSON.stringify(data));
